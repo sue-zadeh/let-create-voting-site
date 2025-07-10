@@ -1,0 +1,125 @@
+{% extends "base_layout.html" %}
+
+{% block title %}
+ConservationVote - Votes
+{% endblock %}
+{% block css %}
+<style>
+:root {
+      --page-background-color: {{ styles['background_color'] | default('#FFFFFF') }};
+      --topic-text-color: {{ styles['topic_text_color'] | default('#000000') }};
+      --topic-font-size: {{ styles['topic_font_size'] | default('2rem') }};
+      --main-text-color: {{ styles['main_text_color'] | default('#000000') }};
+      --main-font-size: {{ styles['main_font_size'] | default('1.25rem') }};
+    }
+    
+    body, .modal-content.themed {
+      background-color: var(--page-background-color);
+    }
+    
+    h1.themed, h2.themed, h3.themed, h4.themed {
+      color: var(--topic-text-color);
+      font-size: var(--topic-font-size);
+    }
+    
+    p.themed, label.themed, input.themed {
+      color: var(--main-text-color);
+      font-size: var(--main-font-size);
+    }
+</style>
+{% endblock %}
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 text-center">
+    <h3 class="themed">{{current_competition}}</h3>
+    <h1 class="themed">Votes for {{event_name}}</h1>
+
+
+    <div class="container">
+
+        <div class="d-flex justify-content-end align-items-center">
+            <p class="mb-0 me-3 themed">Event status: <strong><span style="color: red;">{{event_status}}</span></strong></p>
+            <form id="approve-form" action="{{url_for('finalise_event')}}" method="POST" class="d-inline">
+                <input type="hidden" name="event_id" value="{{event_id}}" id="event_id">
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#staticBackdrop" {% if event_status == 'active' or event_status == 'finalised' %} hidden {% endif %}>Approve</button>
+            </form>
+            <p class="mb-0 ms-3 me-3 themed">View Setting:</p>
+            <div class="dropdown">
+                <button id="dropdownViewSetting" class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if current_view_setting == 'multiple' %}Multiple Voters{% else %}All Votes{% endif %}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownViewSetting">
+                    <li><a class="dropdown-item" href="{{url_for('view_votes')}}">All Votes</a></li>
+                    <li><a class="dropdown-item" href="{{url_for('view_votes', view_setting='multiple')}}">Multiple Voters</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% if current_view_setting == "single" %}
+    {% include "votes_single.html" %}
+    {% else %}
+    {% include "votes_multiple.html" %}
+    {% endif %}
+
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Approve the result</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to approve this event result? 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="confirm-approve">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Static Backdrop Modal -->
+    <div class="modal fade vms-modal-dialog" id="vms-dialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="vmsDialogLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="vmsDialogLabel">Approve?</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-body-description"></p>
+                    <textarea
+                        class="form-control modal-text-area"
+                        rows="3"
+                        required
+                    ></textarea>
+                    <p class="vms-modal-validation" style="color: red;"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger vms-confirm-button">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.getElementById('confirm-approve').addEventListener('click', function() {
+            document.getElementById('approve-form').submit();
+        });
+    </script>
+</div>
+
+<script src="{{ url_for('static', filename='js/vote.js') }}"></script>
+<script src="{{ url_for('static', filename='js/confirm_dialog.js') }}"></script>  
+{% endblock %}

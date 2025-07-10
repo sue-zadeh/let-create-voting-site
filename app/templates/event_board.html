@@ -1,0 +1,188 @@
+{% extends "base_layout.html" %} {% block title %} ConservationVote - Future Events {% endblock
+%} {% block header %}
+<h3 class="themed">Future Events</h3>
+{% endblock %} 
+{% block css %}
+<style>
+  :root {
+      --page-background-color: {{ styles['background_color'] | default('#FFFFFF') }};
+      --topic-text-color: {{ styles['topic_text_color'] | default('#000000') }};
+      --topic-font-size: {{ styles['topic_font_size'] | default('2rem') }};
+      --main-text-color: {{ styles['main_text_color'] | default('#000000') }};
+      --main-font-size: {{ styles['main_font_size'] | default('1.25rem') }};
+    }
+    
+    body, .modal-content.themed {
+      background-color: var(--page-background-color);
+    }
+    
+    h1.themed, h2.themed, h3.themed, h4.themed {
+      color: var(--topic-text-color);
+      font-size: var(--topic-font-size);
+    }
+    
+    p.themed, label.themed, input.themed {
+      color: var(--main-text-color);
+      font-size: var(--main-font-size);
+    }
+  </style>
+<link href="{{ url_for('static', filename='css/event.css') }}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<!-- Static Backdrop Modal -->
+<div class="modal fade" id="confirm-dialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+aria-labelledby="confirmDialogLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h1 class="modal-title fs-5" id="confirmDialogLabel">Delete?</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+              <button type="button" class="btn btn-success delete-button">Yes</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+{%if events%}
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Description</th>
+      <th scope="col">Start Date</th>
+      <th scope="col">End Date</th>
+      <th scope="col">Edit Dates</th>
+      <th scope="col">Edit Competitors</th>
+      <th scope="col">Delete</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {%for event in events%}
+    <tr>
+      <th>{{event['name']}}</th>
+      <td>{{event['description']}}</td>
+      <td>{{event['start_date'] | format_date}}</td>
+      <td>{{event['end_date'] | format_date}}</td>
+      <td>
+        <button class="btn btn-success" href="#" data-bs-toggle="modal"
+        data-bs-target="#update-event" 
+        data-bs-start-date="{{event['start_date']}}"
+        data-bs-end-date="{{event['end_date']}}"
+        data-vms-save-event-url="{{url_for('save_event', event_id=event['event_id'])}}"
+        >
+        Edit Dates
+        </button>
+      </td>
+      <td>
+        <a class="btn btn-success" href="{{url_for('event',event_id=event['event_id'])}}">
+        Edit Competitors
+        </a>
+      </td>
+      <td>
+        <button
+            id = "delete_event"
+            type="button"
+            class="btn btn-danger delete-button"
+            data-bs-toggle="modal"
+            data-bs-target="#confirm-dialog"
+            data-vms-event-name="{{event['name']}}"
+            data-vms-delete-event-url="/delete_event/{{event['event_id']}}"
+        >
+            Delete
+        </button>
+    </td>
+    </tr>
+    
+  {%endfor%}
+  </tbody>
+  
+</table>
+{% else %}
+  <div class="text-center p-4 bg-warning text-dark rounded shadow-sm">
+      <p class="mb-0">No data available on this page.</p>
+  </div>
+  {%endif%}
+<button class="btn btn-success" href="#" data-bs-toggle="modal"
+  data-bs-target="#add-event" data-bs-name="" data-bs-description=""
+  data-bs-start-date="" data-bs-end-date=""
+  data-vms-save-event-url="{{url_for('save_event', event_id=0)}}" >
+Add Event
+</button>
+
+<!-- Scrollable Save Event Modal -->
+<div class="modal fade text-start" id="add-event" tabindex="-1">
+  <form>
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Event - {{current_competition}}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="vms-add-event-feedback text-danger mb-2">
+          </div>
+          <div class="form-group">
+            <label for="event_name">Name</label>
+            <input type="text" class="form-control" id="event_name" name="event_name" required>
+          </div>
+          <div class="form-group">
+            <label for="event_description">Description</label>
+            <input type="text" class="form-control" id="event_description" name="event_description" required>
+          </div>
+          <div class="form-group">
+            <label for="event_start_date">Start Date</label>
+            <input type="date" class="form-control" id="event_start_date" name="event_start_date" required>
+          </div>
+          <div class="form-group">
+            <label for="event_end_date">End Date</label>
+            <input type="date" class="form-control" id="event_end_date" name="event_end_date" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-success save-button">Save</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- save event modal -->
+<div class="modal fade text-start" id="update-event" tabindex="-1">
+  <form>
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Event</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="vms-edit-event-feedback text-danger mb-2">
+          </div>
+          <div class="form-group">
+            <label for="event_start_date">Start Date</label>
+            <input type="date" class="form-control" id="update_event_start_date" name="event_start_date" required>
+          </div>
+          <div class="form-group">
+            <label for="event_end_date">End Date</label>
+            <input type="date" class="form-control" id="update_event_end_date" name="event_end_date" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-success save-button">Save</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script src="{{ url_for('static', filename='js/event_board.js') }}"></script>
+{%endblock%}

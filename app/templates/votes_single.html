@@ -1,0 +1,103 @@
+{% block votes_view_block %}  
+<div class="container py-4">
+    <div class="grid gap-0 row-gap-3">
+        <form action="{{url_for('view_votes')}}" method="GET" class="row gy-2 gx-3 align-items-center">
+            <div class="col-md-2">
+                <input type="text" class="form-control vms-search-competitor-name" name="competitor_name" value="{% if not competitor_name %}{% else %}{{competitor_name}}{% endif %}" placeholder="Search by competitor name" id="competitor_name">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select vms-search-ip-addr" aria-label="IP Address" name="ip_address">
+                    <option value="" {% if not ip_address %}selected{% endif %}>Select IP address</option>
+                    {% for ip in ip_dropdown_list %}
+                    <option value="{{ ip['ip_address'] }}" {% if ip['ip_address'] == ip_address %}selected{% endif %}>{{ ip['ip_address'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            
+
+
+            <div class="col-md-2">
+                <input class="form-control vms-search-start-date" type="date" name="start_date" value="{{start_date}}">
+            </div>
+            <div class="col-md-2">
+                <input class="form-control vms-search-end-date" type="date" name="end_date" value="{{end_date}}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="vms-search-btn btn btn-success w-100">Search</button>
+            </div>
+            <div class="col-md-2">
+                <a class="btn btn-success vms-clear-search w-100">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+<div>
+    {% if not votes %}
+    <div class="alert alert-warning" role="alert">
+        No votes found for the given criteria.
+    </div>
+    {% else %}
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Username</th>
+                    <th scope="col">Vote Time</th>
+                    <th scope="col">IP Address</th>
+                    <th scope="col">Competitor</th>
+                    <th scope="col" {% if event_status == 'finalised' %}hidden{% endif %}>Mark Invalid</th>
+                    <th scope="col">Ban Users</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vote in votes %}
+                    <tr>
+                        <th scope="row">{{vote['username']}}</th>
+                        <td>{{vote['vote_time'] | format_datetime}} </td>
+                        <td>{{vote['ip_address']}}</td>
+                        <td>{{vote['competitor_name']}}</td>
+
+                        {% if not vote['invalid'] %}  
+                            <td>
+                            <button class="btn btn-danger" href="#" data-bs-toggle="modal"
+                                data-bs-target="#vms-dialog"
+                                data-vms-modal-title="Invalidate Votes"
+                                data-vms-action-text="Invalidate"
+                                data-vms-modal-body="Are you sure you want to invalidate all votes from this IP address?"
+                                data-vms-modal-need-reason="no"
+                                data-vms-url-id="{{vote['ip_address']}}"
+                                data-vms-url="{{url_for('invalid_url')}}"
+                                >
+                                Invalid</button>
+                            </td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        {% if not vote['banned'] %}
+                        <td>
+                            <button class="btn btn-danger" href="#" data-bs-toggle="modal"
+                              data-bs-target="#vms-dialog"
+                              data-vms-modal-title="Ban Users"
+                              data-vms-action-text="Ban"
+                              data-vms-modal-body="Are you sure you want to ban all users who voted in the event from this IP address? Please provide a ban reason"
+                              data-vms-modal-need-reason="yes"
+                              data-vms-url-id="{{vote['ip_address']}}"
+                              data-vms-url="{{url_for('ban_users_at_ip')}}"
+                              >
+                               Ban Users</button>
+                        </td>
+                        {% else %}
+                        <td></td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<!--<script src="{{ url_for('static', filename='js/vote.js') }}"></script>-->
+{% endblock %}

@@ -1,0 +1,106 @@
+{%extends 'base_layout.html'%}{% block title %}ConservationVote - Theme History{% endblock %}
+{%block header %}
+
+<h1 class="mb-4 text-center">Theme History</h1>
+
+{% endblock %}
+{% block css %}
+<style>
+    :root {
+      --page-background-color: {{ styles['background_color'] | default('#FFFFFF') }};
+      --topic-text-color: {{ styles['topic_text_color'] | default('#000000') }};
+      --topic-font-size: {{ styles['topic_font_size'] | default('2rem') }};
+      --main-text-color: {{ styles['main_text_color'] | default('#000000') }};
+      --main-font-size: {{ styles['main_font_size'] | default('1.25rem') }};
+    }
+    
+    body {
+      background-color: var(--page-background-color);
+    }
+    
+    h1, h2, h3, h4 {
+      color: var(--topic-text-color);
+      font-size: var(--topic-font-size);
+    }
+    
+    p, label, input {
+      color: var(--main-text-color);
+      font-size: var(--main-font-size);
+    }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+
+{% if style_history is none %}
+<div class="alert alert-warning mt-3" role="alert">
+    There is no theme history yet.
+</div>
+{% else %}
+<div class="table-responsive mt-4">
+    <table class="table">
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Theme Name</th>
+                <th scope="col">Competition Name</th>
+                <th scope="col">Background Color</th>
+                <th scope="col">Topic Text Color</th>
+                <th scope="col">Topic Font Size</th>
+                <th scope="col">Main Text Color</th>
+                <th scope="col">Main Font Size</th>
+                <th scope="col">Date</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for style in styles_history %}
+            <tr>
+                <th scope="row">{{ style['theme_name'] }}</th>
+                <td>{{ style['name'] }}</td>
+                <td style="background-color: {{ style['background_color'] }};">{{ style['background_color'] }}</td>
+                <td style="background-color: {{ style['topic_text_color'] }};">{{ style['topic_text_color'] }}</td>
+                <td>
+                    {% if style['topic_font_size'] == '3rem' %}
+                        Very Large
+                    {% elif style['topic_font_size'] == '2.5rem' %}
+                        Large
+                    {% elif style['topic_font_size'] == '2rem' %}
+                        Medium
+                    {% elif style['topic_font_size'] == '1.5rem' %}
+                        Small
+                    {% elif style['topic_font_size'] == '1rem' %}
+                        Very Small
+                    {% else %}
+                        {{ style['topic_font_size'] }}  <!-- This will display anything not specifically mapped -->
+                    {% endif %}
+
+                </td>
+                <td style="background-color: {{ style['main_text_color'] }};">{{ style['main_text_color'] }}</td>
+                <td>
+                    {% if style['main_font_size'] == '2rem' %}
+                        Large
+                    {% elif style['main_font_size'] == '1.75rem' %}
+                        Medium
+                    {% elif style['main_font_size'] == '1.5rem' %}
+                        Normal
+                    {% elif style['main_font_size'] == '1.25rem' %}
+                        Small
+                    {% elif style['main_font_size'] == '1rem' %}
+                        Very Small
+                    {% else %}
+                        {{ style['main_font_size'] }}
+                    {% endif %}
+                </td>
+
+                <td>{{ style['date_created'].strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>
+                    <a href="{{ url_for('rollback_styles', style_id=style['style_id']) }}" class="btn btn-primary">Roll back</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

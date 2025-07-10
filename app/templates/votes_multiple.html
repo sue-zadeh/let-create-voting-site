@@ -1,0 +1,88 @@
+{% block votes_view_block %}  
+<div>
+    {% if not ip_addresses %}
+    <div class="alert alert-warning" role="alert">
+        No votes found for the given criteria.
+    </div>
+    {% else %}
+
+    <div class="accordion" id="multiple-votes-accordion">
+        {% for ip_address in ip_addresses %}
+        <div class="accordion-item">
+          <div class="accordion-header d-flex justify-content-between align-items-center">
+
+            <button class="accordion-button text-nowrap me-1 d-flex justify-content-between collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{loop.index}}" aria-expanded="false" aria-controls="collapse{{loop.index}}">
+              {{ip_address.address}} 
+            </button>
+            <div class="align-items-center d-flex gap-1 mx-1 text-nowrap">
+                <span class="badge text-bg-success" title="Valid Votes">{{ip_address['numValid']}}</span>
+                <span class="badge text-bg-danger" title="Invalid Votes">{{ip_address['numInvalid']}}</span>
+            </div>
+            
+            <div class="col-3 col-lg-2">
+              {% if ip_address['numValid'] > 0 %}  
+              <button class="btn btn-danger mx-1" href="#" data-bs-toggle="modal"
+                data-bs-target="#vms-dialog"
+                data-vms-modal-title="Invalidate Votes"
+                data-vms-action-text="Invalidate"
+                data-vms-modal-body="Are you sure you want to invalidate all votes from this IP address?"
+                data-vms-modal-need-reason="no"
+                data-vms-url-id="{{ip_address['address']}}"
+                data-vms-url="{{url_for('invalid_url')}}"
+                >
+                 Invalidate Votes</button>
+                 {% endif %}
+            </div>
+                 
+                 
+                 <div class="col-3 col-sm-2">
+                  {% if ip_address['banUsers?'] %}
+                  <button class="btn btn-danger" href="#" data-bs-toggle="modal"
+                    data-bs-target="#vms-dialog"
+                    data-vms-modal-title="Ban Users"
+                    data-vms-action-text="Ban"
+                    data-vms-modal-body="Are you sure you want to ban all users who voted in the event from this IP address? Please provide a ban reason"
+                    data-vms-modal-need-reason="yes"
+                    data-vms-url-id="{{ip_address['address']}}"
+                    data-vms-url="{{url_for('ban_users_at_ip')}}"
+                    >
+                     Ban Users</button>
+                {% endif %}
+                </div>
+        </div>
+          <div id="collapse{{loop.index}}" class="accordion-collapse collapse" data-bs-parent="#multiple-votes-accordion">
+            <div class="accordion-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Username</th>
+                                <th scope="col">Vote Time</th>
+                                <th scope="col">Full Name</th>
+                                <th scope="col">Competitor</th>
+                                <th scope="col">Valid Vote?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vote in ip_address['votes'] %}
+                                <tr>
+                                    <th scope="row">{{vote['username']}}</th>
+                                    <td>{{vote['vote_time'] | format_datetime}} </td>
+                                    <td>{{vote['full_name']}} </td>
+                                    <td>{{vote['competitor_name']}}</td>
+                                    <td style="color: {% if vote['invalid'] %}red{% else %}green{% endif %}">{% if vote['invalid'] %}No{% else %}Yes{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+    
+    {% endif %}
+</div>
+{% endblock %}

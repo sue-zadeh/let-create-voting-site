@@ -1,0 +1,23 @@
+{% block competition_list %}
+<div class="container mt-4">
+    <div class="row">
+        <h2 class="text-center">Competitions</h2>
+        <div class="container-fluid row">
+            <div class="d-flex flex-wrap justify-content-center">
+                {% for competition in competitions %}
+                <div class="card m-2" style="width: 18rem;">
+                    <a class="text-decoration-none text-reset" href="{{ url_for('competition', competition_id=competition.competition_id) }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ competition["name"] }}</h5>
+                        <p>
+                            {{ competition['description']}}
+                        </p>
+                    </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

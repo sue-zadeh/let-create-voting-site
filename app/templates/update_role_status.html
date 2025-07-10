@@ -1,0 +1,130 @@
+{%extends 'base_layout.html'%} {% block title %} ConservationVote - Profile: Update role/status{% endblock %} {%block
+  content%} {%if user%}
+  <div class="container rounded bg-transparent mt-5 mb-5">
+    <div class="row">
+      <div class="col-md-3 border-right">
+        <div class="d-flex flex-column align-items-center text-center p-3 py-5">
+          <img
+            class="rounded-circle mt-5"
+            width="150px"
+            src="{{ url_for('static', filename='user_images/' + (user['profile_image'] if user['profile_image'] else 'default.jpg')) }}"
+          /><span class="font-weight-bold"
+            >{{user['first_name']}} {{user['last_name']}}</span
+          >
+        </div>
+      </div>
+      <div class="col-md-5 border-right">
+        <div class="p-3 py-5">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="text-right">Profile</h4>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label class="labels">User Name</label>
+              <div>{{user['username']}}</div>
+            </div>
+            <div class="row mt-2">
+              <div class="col-md-6">
+                <label class="labels">First Name</label>
+                <div>{{user['first_name']}}</div>
+              </div>
+              <div class="col-md-6">
+                <label class="labels">Last Name</label>
+                <div>{{user['last_name']}}</div>
+              </div>
+            </div>
+            <form
+              method="post"
+              action="/profile/management/update/{{user['user_id']}}"
+              autocomplete="off"
+
+            >
+              <div class="row mt-3">
+                <div class="col-md-12">
+                  <label class="labels">Description</label>
+                  <div>{{user['description']}}</div>
+                </div>
+                <div class="col-md-12">
+                  <label class="labels">Email</label>
+                  <div>{{user['email']}}</div>
+                </div>
+                <div class="col-md-12">
+                  <label class="labels">Location</label>
+                  <div>{{user['location']}}</div>
+                </div>
+
+                {%if logged_in_site_role == 'site admin' and logged_in_id|string != user_id|string%}
+
+                <div class="col-md-12">
+                  <label class="labels">Status</label>
+                  <div>
+                    <select class="form-select" name="status" required>
+                      <option value="1" {%if user['is_active'] == 1%}selected{%endif%}>Active</option>
+                      <option value="0" {%if user['is_active'] == 0%}selected{%endif%} {% if user['user_id'] == logged_in_user_id %}disabled{% endif %}>Inactive</option>
+                    </select>
+                  </div>
+                </div>
+                {%endif%}
+                {%if (logged_in_site_role == "site admin" or have_admin_privileges)%}
+                {% if logged_in_site_role == "site admin" and logged_in_id|string != user_id|string %}
+                <div class="col-md-12">
+                  <label class="labels">Site Role</label>
+                  <div>
+                    <select class="form-select" name="user_site_role" required>
+                      <option value="voter" {%if user['site_role'] == "voter"%}selected{%endif%}>Voter</option>
+                      <option value="site admin" {%if user['site_role'] == "site admin"%}selected{%endif%}>Site Admin</option>
+                    </select>
+                  </div>
+                </div>
+                {% endif %}
+                <h3 class="mt-4 text-center">Competition Roles</h3>
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th scope="col">Competition Name</th>
+                      <th scope="col">Competition Role</th>
+                      <th scope="col">Moderator</th>
+                    </tr>
+                  </thead>
+                  {%if all_competitions and (logged_in_site_role == 'site admin' or have_admin_privileges) %}{%for single_competition in all_competitions%}
+                  <tbody>
+                    <tr>
+                      <input type="hidden" value='{{single_competition.competition_id}}' name='single_competition_ids[]'>
+                      <td>{{single_competition.competition_name}}</td>
+                      <td><div>
+                        {% if single_competition.role == "hidden" %}  
+                        <select class="form-select" name="roles_for_site_admin[]" required readonly>
+                          <option value="hidden" selected>Hidden</option>
+                        </select>
+                        {% else %}
+                        <select class="form-select" name="roles_for_site_admin[]" required >
+                          <!-- At least one option must not be disabled in order for the POST to process correctly -->
+                          <option value="voter" {%if single_competition.role == "voter"%}selected{% elif logged_in_id|string == user_id|string %}disabled{%endif%}>Voter</option>
+                          <option value="scrutineer" {%if single_competition.role == "scrutineer"%}selected{% elif logged_in_id|string == user_id|string %}disabled{%endif%}>Scrutineer</option>
+                          <option value="admin" {%if single_competition.role == "admin"%}selected{% elif logged_in_id|string == user_id|string %}disabled{%endif%}>Admin</option>
+                        </select>
+                        {% endif %}
+                      </div></td>
+                      <td>
+                        <select class="form-select" name="moderators[]" required {% if logged_in_site_role == 'site admin' %}disabled{% endif %}>
+                          <option value="No" {%if single_competition.is_moderator == "No"%}selected{%endif%}>No</option>
+                          <option value="Yes" {%if single_competition.is_moderator == "Yes"%}selected{%endif%}>Yes</option>
+                        </select>  
+                      </td>
+                    </tr>
+                  </tbody>
+                  {%endfor%}{%endif%}
+                </table>
+              </div>
+              {%endif%}
+              <div class="mt-5 text-center">
+                <button class="btn btn-success" type="submit">Update</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {%endif%} {%endblock%}
+  

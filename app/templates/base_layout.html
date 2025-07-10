@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}ConservationVote - Tree of the Year{% endblock %}</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
+    <!--link css file to the home page-->
+    <link
+      href="{{ url_for('static', filename='css/style.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
+    />
+    {% block css %} {% endblock %}
+<!--changing style based on competition admin choice-->
+<style>
+
+  
+</style>
+
+
+
+
+    
+  </head>
+  <body>
+    <input type="hidden" id="current_user_id" value="{{ current_user_id }}">
+    <div class="page-all" style="min-height: 100vh; position: relative; padding-bottom: calc(var(--main-font-size, var(--bs-body-font-size)) + 60px);">
+  <div class="page-excluding-footer">
+  <div class="sticky-top">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('home') }}">ConservationVote</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+  
+          {% if logged_in_role == "guest" %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login|Register</a></li>
+
+            {% if current_competition is not none %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('current_event') }}">Current Event</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('finished_event')}}">Previous Events</a></li>
+            {% endif %}
+            
+
+          {% else %}
+
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+              <span style="display: inline-flex; align-items: center;">
+                <i class="fa-regular fa-user me-1" style="margin-right: 5px;"></i> Profile
+              </span>
+              </a>
+              <ul class="dropdown-menu">
+
+
+                <li><a class="dropdown-item" href="{{ url_for('logout')}}">Logout</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('profile', user_id=session['user_id'])}}">View Profile</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('view_delete_applications')}}">Applications</a></li>
+    
+
+
+                {%if logged_in_site_role == 'site admin'%}
+                
+                <li>
+
+                  <a class="dropdown-item" href="{{ url_for('ban_list')}}">Multiple Bans List</a>
+
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('process_applications') }}"
+                    >Process Applications</a
+                  >
+                  {%endif%} 
+                  {% if not ((logged_in_role == 'voter' and logged_in_site_role != 'site admin') or logged_in_role == 'guest') %}
+                </li>
+
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('check_appeals')}}"
+                    >Appeals</a
+                  >
+                </li>
+
+                {% endif %}
+              </ul>
+            </li>
+            {% if current_competition is not none %}
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+              <span style="display: inline-flex; align-items: center;">
+                <i class="fa-regular fa-calendar-days" style="margin-right: 5px;"></i> Events
+              </span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('current_event') }}"
+                    >Current Event</a
+                  >
+                </li>
+                {% if logged_in_role == "admin" or logged_in_site_role == "site admin" %}
+                <li>
+                  <a class="dropdown-item" href="{{url_for('event_board')}}"
+                    >Future Events</a
+                  >
+                </li>
+
+
+                <li><a class="dropdown-item" href="{{ url_for('customise_style') }}">Choose Theme</a></li>
+
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('view_styles_history') }}"
+                    >Theme History </a
+                  >
+                </li>
+
+                {% endif %}
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('finished_event')}}"
+                    >Previous Events</a
+                  >
+                </li>
+              </ul>
+            </li>
+
+
+            
+
+          
+            
+            {% endif %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_list')}}"><span style="display: inline-flex; align-items: center;">
+              <i class="fa-regular fa-compass" style="margin-right: 5px;"></i>Profile Directory
+            </span></a></li>
+            {% endif %}
+            {% if current_competition is not none %}
+            {% if logged_in_role == "scrutineer" or logged_in_site_role == "site admin" %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('view_votes') }}"><span style="display: inline-flex; align-items: center;">
+              <i class="fa-solid fa-ticket" style="margin-right: 5px;"></i></i>Votes
+            </span></a></li>
+            {% endif %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('message_list')}}"><span style="display: inline-flex; align-items: center;">
+              <i class="fa-solid fa-message" style="margin-right: 5px;"></i></i>Message Board
+            </span></a></li>
+            {% endif %}
+            {% if logged_in_role != "guest" %}
+
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('view_message_box') }}" id="notificationIcon">
+                  <i class="fas fa-envelope"></i>
+                  Message Box
+                  <span id="new-message-indicator" class="badge bg-danger" style="display: none;">0</span>
+                  
+
+              </a>
+          </li>
+          
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      <div class="nav-item dropdown pl-5 mr-3 menu-competitions">
+        <a
+          class="nav-link dropdown-toggle fs-6 text-light"
+          href="#"
+          id="settingsDropdown"
+          role="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <i class="fas fa-list"></i> {% if current_competition is none %}Competition List{% else %}{{current_competition}}{% endif %}
+        </a>
+        <ul
+          class="dropdown-menu dropdown-menu-end dropdown-menu-dark bg-light"
+          aria-labelledby="navbarDarkDropdownMenuLink"
+        >
+          {% for competition in competitions %}
+          <li class="nav-item vms-competition-select-option">
+            <a class="dropdown-item fs-6 text-dark">
+              <a
+                role="button"
+                class="dropdown-item fs-6 text-dark"
+                data-vms-competition-id="{{competition.competition_id}}"
+                >{{ competition.name }}</a
+              >
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {%for category, message in messages%}
+    <div
+      class="alert alert-{{ category }} alert-dismissible fade show"
+      role="alert"
+    >
+      <div>{{ message }}</div>
+      <!-- This has to be 'a' rather than button, because otherwise it causes an error when adding two competitors in a row,
+           because the hidden input saving the event_id gets changed to the image's name after the first add. 
+           I think it may be a bug in bootstrap rather than in this code. -->
+      <a
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+        aria-label="Close"
+      ></a>
+    </div>
+    {%endfor%} {% endif %} {% endwith %}
+  </div>
+
+    <section class="content">
+      <header>
+        <div class="ms-3 mt-1">{% block header %}{% endblock %}</div>
+      </header>
+      {% block content %} {% endblock %}
+    </section>
+  </div>
+
+
+
+    <footer class="bg-success" style="position: absolute; bottom: 0px; width: 100%;">
+      <div class="container">
+        <p class="mb-0 text-center">Group Alpha</p>
+      </div>
+    </footer>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="{{url_for('static', filename='js/base_layout.js')}}"></script>
+    <script src="{{url_for('static', filename='js/form_validation.js')}}"></script>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+{% extends "base_layout.html" %}
+
+{% block title %} ConservationVote - Create Application{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Create a New Competition</h2>
+ 
+
+    <form action="{{ url_for('create_application') }}" method="POST" id="application-form">
+        <div class="mb-3">
+            <label for="name" class="form-label">Application Name:</label>
+            <div class="input-group">
+                <span class="input-group-text">NZ</span>
+                <input type="text" class="form-control" name="app_name" required pattern="^[A-Za-z\s]+$" maxlength="30"
+                title="Only alphabetic characters and spaces are allowed." 
+                placeholder="Enter application name" style="max-width: 200px;"> 
+                <span class="input-group-text">of the Year</span>
+            </div>
+            <!-- maxlength has deducted characters taken by "NZ " and " of the Year" -->
+        </div>
+        <div class="mb-3">
+            <label for="app_description" class="form-label">Description:</label>
+            <textarea id="app_description" class="form-control" name="app_description" required maxlength="255" 
+            placeholder="Enter application description" rows="4"></textarea>
+        </div>
+        <div class="d-flex justify-content-start">
+            <button type="submit" class="btn btn-primary">Submit Application</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,330 @@
+{% extends "base_layout.html" %} {% block title %} ConservationVote - Profile {% endblock %} {%
+block header %}{% endblock %} {% block content %}
+<div class="container rounded bg-transparent">
+  <div class="row">
+    <div class="col-md-3 border-right">
+      <div class="d-flex flex-column align-items-center text-center p-3 py-5">
+        <img class="rounded-circle" width="120px"
+          src="{{ url_for('static', filename='user_images/' + (profileimage if profileimage else 'default.jpg')) }}"
+          alt="Profile Image" /><span class="font-weight-bold">{{firstname}} {{lastname}}</span>
+      </div>
+    </div>
+    <div class="col-md-8 text-start">
+      <div class="p-3 py-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="text-right">Profile</h4>
+        </div>
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label class="labels fst-italic">User Name</label>
+            <div>{{username}}</div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label class="labels fst-italic">First Name</label>
+              <div>{{firstname}}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="labels fst-italic">Last Name</label>
+              <div>{{lastname}}</div>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-md-12">
+              <label class="labels fst-italic">Description</label>
+              <div>{{description}}</div>
+            </div>
+            <div class="col-md-12 mt-3">
+              <label class="labels fst-italic">Email</label>
+              <div>{{email}}</div>
+            </div>
+            <div class="col-md-12 mt-3">
+              <label class="labels fst-italic">Location</label>
+              <div>{{location}}</div>
+            </div>
+            {%if logged_in_role == "admin" or logged_in_role == "scrutineer" or
+            logged_in_site_role == "site admin"%}
+            <div class="col-md-12 mt-3">
+              <label class="labels fst-italic">Status</label>
+              {%if status == 1%}
+              <div>Active</div>
+              {%else%}
+              <div>Inactive</div>
+              {%endif%}
+            </div>
+            {%endif%}
+          </div>
+          {%if logged_in_site_role == 'site admin'%}
+          <div class="col-md-12 mt-3">
+            <label class="labels fst-italic">Site Role</label>
+            <div>{{site_role}}</div>
+          </div>
+          {%endif%}
+          {%if user_id == session['user_id']%}
+          <div class="col text-center">
+            <a href="{{url_for('profile_update',user_id=user_id)}}" class="mx-2 btn btn-success">Update Profile</a>
+            <a href="{{url_for('profile_update_password')}}" class="mx-2 btn btn-success">Update Password</a>
+          </div>
+          {% endif %}
+          
+          {%if logged_in_site_role == 'site admin' or have_admin_privileges or
+          logged_in_id|string == user_id|string %}
+          <!-- Both site admin and competition admin should be able to see the roles for competitions they can administer. -->
+          <h3 class="mt-4 text-center">Competition Roles</h3>
+
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">Competition Name</th>
+                <th scope="col">Competition Role</th>
+                <th scope="col">Moderator</th>
+              </tr>
+            </thead>
+            {%for single_competition in all_competitions%}
+            <tbody>
+              <tr>
+                <td>{{single_competition.competition_name}}</td>
+                <td>{{single_competition.role}}</td>
+                <td>{{single_competition.is_moderator}}</td>
+              </tr>
+            </tbody>
+            {%endfor%}
+          </table>
+          {% endif %}
+          {% if logged_in_site_role == 'site admin' and logged_in_id|string != user_id|string %}
+          <div class="mt-1 text-center">
+            <a href="{{ url_for('profile_role_status_update', user_id=user_id) }}" class="btn btn-success">
+              Update Role/Moderator/Status
+            </a>
+          </div>
+          {%endif%} {% if have_admin_privileges and site_role != 'site admin' %}
+          <div class="mt-1 text-center">
+            <a href="{{ url_for('profile_role_status_update', user_id=user_id) }}" class="btn btn-success">
+              Update Role/Moderator
+            </a>
+          </div>
+          {% endif %}
+          <a class="anchor" id="competition-bans"></a>
+          <h3 class="mt-5 text-center">Competition Bans</h3>
+          {%if logged_in_site_role == 'site admin' or logged_in_id|string == user_id|string%} {%if
+            site_wide_ban_user%}
+            <div class="my-1 text-center text-warning">
+              User has been site wide banned
+            </div>
+            {%endif%} {%endif%}
+          {% if logged_in_role == 'admin' or logged_in_role =="scrutineer" or logged_in_id|string == user_id|string or
+          logged_in_site_role =='site admin' %}
+          {% if ban_list | length > 0 %}
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">Competition Name</th>
+                <th scope="col">Status</th>
+                <th scope="col">Reason For Ban</th>
+                <th scope="col">Banned Date</th>
+              </tr>
+            </thead>
+
+            {% for ban in ban_list %}
+            <tbody>
+              <tr>
+                <td>{{ ban['competition_name'] }}</td>
+                <td>{{ ban['status'] }}</td>
+                <td>{{ ban['reason'] }}</td>
+                <td>{{ ban['ban_date'] }}</td>
+              </tr>
+            </tbody>
+            {% endfor %}
+          </table>
+          {% if user_id == session['user_id'] %}
+          <div class="mt-1 text-center">
+            <a class="btn btn-success" href="{{ url_for('view_banned_competitions')}}">Appeal Bans</a>
+          </div>
+          {% endif %}
+          {% else %}
+          <p>User has not been banned from any competitions</p>
+          {% endif %}
+          {%endif%}
+          
+          {% if user_id != session['user_id'] %}
+          {%if logged_in_role == 'admin' or logged_in_role ==
+          'scrutineer' or logged_in_site_role == 'site admin' %}
+          <div class="mt-1 text-center">
+            <a href="{{ url_for('ban_single_user', user_id=user_id) }}" class="btn btn-success">
+              Update Ban Status
+            </a>
+          </div>
+          {%endif%}
+          {% endif %}
+
+          {% if logged_in_site_role == 'site admin' %}
+          <h3 class="mt-5 text-center">Vote History</h3>
+          <table class="table table-hover">
+            {% if vote_histories %}
+            <thead>
+              <tr>
+                <th scope="col">Event Name</th>
+                <th scope="col">Competitor</th>
+                <th scope="col">Vote Time</th>
+                <th scope="col">IP Address</th>
+              </tr>
+            </thead>
+            {% for vote_history in vote_histories %}
+            <tbody>
+              <tr>
+                <td>{{ vote_history['event_name'] }}</td>
+                <td>{{ vote_history['competitor_name'] }}</td>
+                <td>{{ vote_history['vote_time'] }}</td>
+                <td>{{ vote_history['ip_address'] }}</td>
+              </tr>
+            </tbody>
+            {% endfor %}
+            {% else %}
+            <p>User has not voted in any event yet.</p>
+            {% endif %}
+          </table>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- site wide ban Modal -->
+
+<div class="modal fade" id="siteWideBanModal{{user_id}}" tabindex="-1"
+  aria-labelledby="siteWideBanModalLabel{{user_id}}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="siteWideBanModalLabel{{user_id}}">
+          Comfirm Site Wide Ban
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="siteWideBanModal{{user_id}}" method="POST" action="{{ url_for('site_wide_ban', user_id=user_id)}}">
+        <div class="modal-body">
+          <p>
+            Are you sure you want to site wide ban this user? Please provide a
+            reason for this:
+          </p>
+          <textarea id="siteWideBanTextArea{{user_id}}" name="siteWideBan_reason" class="form-control" rows="3"
+            required></textarea>
+        </div>
+        <div class="modal-footer">
+          <input type="hidden" id="user_id" name="user_id" value="{{user_id}}" />
+
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-success">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Promote Confirmation Modal -->
+<div class="modal fade" id="confirmPromotionModal{{user_id}}" tabindex="-1"
+  aria-labelledby="confirmPromotionModalLabel{{user_id}}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmPromotionModalLabel{{user_id}}">
+          Confirm Promotion
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to promote this user to a moderator?
+      </div>
+      <form id="promoteForm{{user_id}}" method="POST" action="{{url_for('moderator_management', user_id=user_id)}}">
+        <input type="hidden" id="promote_user_id" name="promote_user_id" value="{{user_id}}" />
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-success" id="confirmPromotionBtn">
+            Confirm
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Demote Confirmation Modal -->
+<div class="modal fade" id="confirmDemotionModal{{user_id}}" tabindex="-1"
+  aria-labelledby="confirmDemotionModalLabel{{user_id}}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmDemotionModalLabel{{user_id}}">
+          Confirm Demotion
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to demote this user from being a moderator?
+      </div>
+      <form id="demoteForm{{user_id}}" method="POST" action="{{url_for('moderator_management', user_id=user_id)}}">
+        <input type="hidden" id="demote_user_id" name="demote_user_id" value="{{user_id}}" />
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-danger" id="confirmDemotionBtn">
+            Confirm
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Handle site-wide ban modal
+  document.addEventListener("DOMContentLoaded", function () {
+    const siteWideBanButtons = document.querySelectorAll(".site-wide-ban-btn");
+
+    siteWideBanButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const userId = this.getAttribute("data-user-id");
+
+        const modal = document.querySelector(`#siteWideBanModal${userId}`);
+        const userIdInput = modal.querySelector("#user_id");
+        const siteWideBanTextArea = modal.querySelector(
+          `#siteWideBanTextArea${userId}`
+        );
+
+        userIdInput.value = userId;
+        siteWideBanTextArea.value = "";
+
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+      });
+    });
+  });
+</script>
+
+<script>
+  // Handle demotion of moderator modal
+  document
+    .getElementById("confirmDemotionBtn")
+    .addEventListener("click", function () {
+      document.getElementById("demoteForm{{user_id}}").submit();
+    });
+</script>
+
+<script>
+  // Handle promotion of moderator modal
+  document
+    .getElementById("confirmPromotionBtn")
+    .addEventListener("click", function () {
+      document.getElementById("promoteForm{{user_id}}").submit();
+    });
+</script>
+
+<script src="{{url_for('static', filename='js/profile.js')}}"></script>
+{% endblock %}

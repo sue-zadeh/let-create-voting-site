@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %} NZ Walkway of the Year{% endblock %}
+
+{% block content %}
+<!-- Include CSS and JS Libraries -->
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<style>
+  body, html {
+    padding: 0px !important;
+    margin: 0px !important;
+    overflow-x: hidden;
+  }
+  
+  .content-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    background-size: cover;
+    height: 85vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border-bottom: 5px solid darkred;
+    position: relative;
+    animation: fade-in 2s ease-in forwards;
+  }
+  
+  .content-overlay {
+    max-width: 50%;
+    margin-left: 10%;
+    margin-top: 15%;
+    background-color: rgba(86, 86, 86, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  .button-container {
+   background-color:  rgba(150, 0, 14);
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    animation: fade-in 2s ease-in forwards;
+  }
+  
+  .log-home {
+    background-color: rgba(150, 0, 14);
+    border: none;
+    animation: fade-in 2s ease-in-out forwards;
+
+  }
+  
+  .scroll-down-container {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    animation: bounce 2s infinite;
+  }
+  
+  .pic-home2 {
+    justify-content: center;
+    width: 85%;
+    height: auto;
+    border: solid 0.35em rgb(250, 231, 231);
+    border-radius: 55% 40% 50% 12%;
+    animation: slideIn 3s ease-out;
+    object-fit: cover;
+  }
+  
+  .image-overlay {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .new-image-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -60px;
+    animation: fade-in 2s ease-in-out forwards;
+  }
+  </style>
+
+<div class="section2-home justify-content-center ml-3">
+  <div class="container-fluid justify-content-center ml-5 ">
+    <div class="row texthome-section2 justify-content-center">
+        <div class="col-md-6">
+            <div class="ml-5 justify-content-center">
+              <div>
+              <h2  class="h2home-section2 text-light mt-5 pt-5 ml-5" data-aos="fade-down-right">
+                  Explore the Best Walkways Across New Zealand
+              </h2>
+              <h2 class="lead mt-3 text-light my-5 mb-5 ml-5" data-aos="fade-down-left">Each walkway has its own unique charm and natural beauty.</h2>
+            </div>
+              <div class="button-container mb-5 pb-3" data-aos="fade-up">
+                <a href="{{ url_for('login') }}" class="btn btn-danger btn-lg mr-2 log-home " data-aos="fade-down-right">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-danger btn-lg log-home" data-aos="fade-down-left">Register</a>
+            </div>
+
+              <div clss=" ml-2 mt-5">
+              <img data-aos="fade-down-right" class="img-thumbnail pic-home2" src="{{ url_for('static', filename='assets/walk10.jpg') }}" alt="Image 2">            </div>
+             </div>
+           </div>
+       <div class="col-md-6 mt-4 image-container-home">
+            <div class="image-overlay d-flex justify-content-center">
+              <img data-aos="fade-down-left" class="img-thumbnail pic-home2" src="{{ url_for('static', filename='assets/walk9.jpg') }}" alt="Image 2">
+          </div>
+          <div class="new-image-container">
+          <img data-aos="fade-down-left" class="img-thumbnail mb-5 pic-home2" src="{{ url_for('static', filename='assets/walk5.jpg') }}" alt="Image 2">
+        </div>
+      </div>
+</div>
+
+<!-- Include AOS JS for scroll -->
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
+<script>
+AOS.init({
+  duration: 1000,
+});
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base_layout.html' %}
+{% block title %}ConservationVote - Multiple Bans List{% endblock %}
+{% block content %}
+
+<h1 class="mt-4 text-center">Multiple Bans List</h1>
+
+<div class="container mt-4">
+  <div class="list-group">
+    <li class="list-group-item d-flex justify-content-between align-items-start"
+      href="#">
+      <div class="ms-2 me-auto">
+        <strong>Username</strong>
+      </div>
+      <span class=""><strong>Number of Bans</strong></span>
+    </li>
+    {%for ban_list in ban_lists%}
+    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-start"
+      href="{{url_for('profile', user_id=ban_list['user_id'], _anchor='competition-bans')}}">
+      <div class="ms-2 me-auto">
+        {{ ban_list['username'] }}
+      </div>
+      <span class="badge text-bg-danger rounded-pill">{{ ban_list['total_bans'] }}</span>
+    </a>
+    {% endfor %}
+  </div>
+
+  {%endblock%}

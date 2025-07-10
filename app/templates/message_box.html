@@ -1,0 +1,169 @@
+{% extends 'base_layout.html' %}
+{% block title %} ConservationVote - Message Box {% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <input type="hidden" id="current_user_id" value="{{ current_user_id }}">
+    <h1 class="mb-4 text-center">Message Box</h1>
+
+    <div class="row">
+        {% if messages|length == 0 %}
+        <div class="alert alert-info" role="alert">
+            No messages available.
+        </div>
+        {% else %}
+
+        <div class="col-md-12">
+            <div class="accordion" id="messageAccordion">
+                {% for (username, site_role, other_user_id), user_messages in messages.items() %}
+
+                    <div class="accordion-item" id="{{ other_user_id }}">
+                        <h2 class="accordion-header" id="heading-{{ loop.index }}">
+                            <button class="accordion-button"  value="{{username}}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ other_user_id }}" aria-expanded="false" aria-controls="collapse-{{ loop.index }}">
+                                <strong>{{ username }}</strong> <em>({{ site_role }})</em>
+                            </button>
+                        </h2>
+                        <div id="collapse-{{ other_user_id }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ loop.index }}" data-bs-parent="#messageAccordion">
+                            <div class="accordion-body">
+                                <table class="message-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Username</th>
+                                            <th scope="col">Message</th>
+                                            <th scope="col">Sent</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="messageTableBody{{ loop.index }}">
+                                        {% for message in user_messages %}
+                                            <tr class="{{ 'my-message' if message['from_user'] == current_user_id else 'other-message' }}">
+                                                <td>{{ message['display_username'] }}</td>
+                                                <td>{{ message['message'] }}</td>
+                                                <td>{{ message['sent'] }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                                <!-- <ul id="message_body{{ other_user_id }}" class="new-messages-list"></ul> -->
+
+                                <input type="text" class="form-control" id="replyText_{{other_user_id}}" placeholder="Type your reply" data-receiver-id="{{ user_messages[0]['other_user_id']  }}">
+                                <button type="button" class="btn btn-primary btn-sm send_reply" data-receiver-id="{{ other_user_id }}" data-index="{{ loop.index }}">Send</button>
+
+                                
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <script>
+        const currentUserId = document.getElementById("current_user_id").value;
+        // send reply button event listener
+        console.log(document.querySelectorAll('.send_reply'));
+        document.querySelectorAll('.send_reply').forEach(button => {
+            console.log(button);
+            button.addEventListener('click', function() {
+                const receiver_id = this.getAttribute('data-receiver-id');
+                const index = this.getAttribute('data-index');   
+                const message = document.getElementById(`replyText_${receiver_id}`).value;             
+                console.log(receiver_id, message);
+                // ajax request to send message 
+                fetch('/send_message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ receiver_id: receiver_id, message: message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const messageInput = document.getElementById(`replyText_${receiver_id}`);
+                        messageInput.value = ''; // empty the input box
+                        
+
+                        // create a new message row and add it to the message history
+                        const newMessageRow = `
+                            <tr>
+                                <td>me</td> <!-- username of the sender, showing as "me" -->
+                                <td>${message}</td>
+                                <td>${new Date().toLocaleString()}</td> <!-- current time -->
+                            </tr>
+                        `;
+                        document.getElementById(`messageTableBody${index}`).insertAdjacentHTML('beforeend', newMessageRow);
+                        
+                    } else {
+                        alert("Failed to send message: " + data.error);
+                    }
+                })
+                .catch(error => console.error('Error sending message:', error));
+            });
+        });
+
+
+
+
+
+
+// if (currentUserId != null) {
+//     setInterval(function() {
+//         fetch('/check_new_messages', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json'
+//             },
+//             body: JSON.stringify({ user_id: currentUserId })
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             const newMessageCount = data.new_message_count;
+//             const indicator = document.getElementById('new-message-indicator');
+
+//             // Update the message indicator
+//             if (newMessageCount > 0) {
+//                 indicator.style.display = 'inline';
+//                 indicator.textContent = newMessageCount;
+//             } else {
+//                 indicator.style.display = 'none';
+//             }
+
+//             // Add new incoming messages to the message box
+//             data.new_messages.forEach(message => {
+//                 const li = document.createElement('li');   //creates a new <li> element, which will hold the text of the new message.
+//                 li.classList.add('text-start');
+//                 li.appendChild(document.createTextNode(message['message']));
+
+//                 // const userAccordionItem = document.getElementById(message['from_user']);
+//                 // if (userAccordionItem) {
+//                 //     userAccordionItem.classList.add('new-message-highlight'); 
+//                 // }
+
+//                 // Highlight the corresponding accordion button
+//                 const userAccordionButton = document.querySelector(`button[data-bs-target="#collapse-${message['from_user']}"]`);
+//                 if (userAccordionButton) {
+//                     userAccordionButton.classList.add('new-message-highlight'); // Highlight button
+//                 }
+//                     // Add click event listener to remove highlight
+//                     userAccordionButton.addEventListener('click', function() {
+//                         userAccordionButton.classList.remove('new-message-highlight'); // Remove highlight on click
+//                     });
+
+//                 document.getElementById('message_body' + message['from_user']).appendChild(li);
+//             });
+//         })
+//         .catch(error => console.error('Error fetching new messages:', error));
+//     }, 5000); // Check every 5 seconds
+// }
+
+
+
+    </script>
+</div>
+{% endblock %}
+
+
+
+
+

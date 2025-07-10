@@ -1,0 +1,125 @@
+{% extends "base_layout.html" %}
+{% block title %}
+ConservationVote - Login|Register
+{% endblock %}
+{% block header %}
+{% endblock %}
+{% block content %}
+
+
+
+    <div class="card mx-auto mt-4 text-center" style="max-width: 600px;">
+        <div class="card-body">
+            <h1>Register</h1>
+            <div>
+                <span><a href="{{ url_for('login') }}" class="link-secondary text-decoration-none fw-semibold">Login</a> | </span>
+                <a href="{{ url_for('register') }}" class="link-secondary text-decoration-none fw-semibold">Register</a>
+            </div>
+            <form action="{{ url_for('register') }}" method="post" autocomplete="off">
+                <div class="mb-3 row">
+                    <label for="username" class="form-label col-sm-4 text-start"><i class="fas fa-user"></i> Username</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" name="username" id="username" value="{{ request.form.username or '' }}" placeholder="Username" required>
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label for="password" class="form-label col-sm-4 text-start"><i class="fas fa-lock"></i> Password</label>
+                    <div class="col-sm-4">
+                        <input type="password" class="form-control" name="password" id="password" minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_])[^\s]{8,}" placeholder="Password" title="Password must be at least 8 characters long, contain a number, a lowercase letter, an uppercase letter, a special character, and have no spaces" required>
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label for="confirm_password" class="form-label col-sm-4 text-start"><i class="fas fa-lock"></i> Confirm Password</label>
+                    <div class="col-sm-4">
+                        <input type="password" class="form-control" name="confirm_password" id="confirm_password" minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_])[^\s]{8,}" placeholder="Enter password again" title="Passwords must match the criteria of the original password." required>
+                    </div>
+                    <label for="password_visible" class="form-label col-sm-3 text-start"><i class="fas fa-eye"></i> Show</label>
+                    <div class="col-sm-1">
+                        <input type="checkbox" class="form-check-input" name="password_visible" id="password_visible" value="1" {% if request.form.visible %} checked {% endif %}>
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label for="email" class="form-label col-sm-4 text-start"><i class="fas fa-envelope"></i> Email</label>
+                    <div class="col-sm-4">
+                        <input type="email" class="form-control" name="email" id="email" value="{{ request.form.email or '' }}" placeholder="Email" required>
+                    </div>
+                    <!-- email visible -->
+                    <label for="email_visible" class="form-label col-sm-3 text-start"><i class="fas fa-eye"></i> Visible</label>
+                    <div class="col-sm-1">
+                        <input type="checkbox" class="form-check-input" name="email_visible" id="email_visible" value="1" {% if request.form.visible %} checked {% endif %}>
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label for="first_name" class="form-label col-sm-4 text-start"><i class="fas fa-id-card"></i> First Name (optional)</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" name="first_name" id="first_name" value="{{ request.form.first_name or '' }}" placeholder="First Name" minlength="2" 
+                        pattern="[A-Za-z\s]+"
+                        title="First name must be at least 2 letters long and contain only alphabetic characters">
+                    </div>
+                    <!-- first name visible -->
+                    <label for="first_name_visible" class="form-label col-sm-3 text-start"><i class="fas fa-eye"></i> Visible</label>
+                    <div class="col-sm-1">
+                        <input type="checkbox" class="form-check-input" name="first_name_visible" id="first_name_visible" value="1" {% if request.form.visible %} checked {% endif %}>
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label for="last_name" class="form-label col-sm-4 text-start"><i class="fas fa-id-card"></i> Last Name (optional)</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" name="last_name" id="last_name" value="{{ request.form.last_name or '' }}" placeholder="Last Name" minlength="2" 
+                        pattern="[A-Za-z\s]+" 
+                        title="Last name must be at least 2 letters long and contain only alphabetic characters">
+                    </div>
+                    <!-- last name visible -->
+                    <label for="last_name_visible" class="form-label col-sm-3 text-start"><i class="fas fa-eye"></i> Visible</label>
+                    <div class="col-sm-1">
+                        <input type="checkbox" class="form-check-input" name="last_name_visible" id="last_name_visible" value="1" {% if request.form.visible %} checked {% endif %}>
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label for="location" class="form-label col-sm-4 text-start"><i class="fas fa-map-marker-alt"></i> Location (optional)</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" name="location" id="location" value="{{ request.form.location or '' }}" placeholder="Location">
+                    </div>
+                    <!-- location visible -->
+                    <label for="location_visible" class="form-label col-sm-3 text-start"><i class="fas fa-eye"></i> Visible</label>
+                    <div class="col-sm-1">
+                        <input type="checkbox" class="form-check-input" name="location_visible" id="location_visible" value="1" {% if request.form.visible %} checked {% endif %}>
+                    </div>
+                </div>
+
+                <!-- visible -->
+                <div class="mb-3 row">
+                    <label for="visible" class="form-label col-sm-8 text-start"><i class="fas fa-eye"></i> Let Other Voters See Profile?</label>
+                    <div class="col-sm-4">
+                        <input type="checkbox" class="form-check-input" name="visible" id="visible" value="1" {% if request.form.visible %} checked {% endif %}>
+                    </div>
+                </div>
+
+                <div class="text-danger mb-3">{{ msg }}</div>
+                <button type="submit" class="btn btn-success w-100">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Show/hide password
+        document.getElementById('password_visible').addEventListener('change', function() {
+            var password = document.getElementById('password');
+            var confirm_password = document.getElementById('confirm_password');
+            if (this.checked) {
+                password.type = 'text';
+                confirm_password.type = 'text';
+            } else {
+                password.type = 'password';
+                confirm_password.type = 'password';
+            }
+        });
+    </script>
+
+{% endblock %}

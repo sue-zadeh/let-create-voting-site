@@ -1,0 +1,64 @@
+{% extends "base_layout.html" %} {% block title %} ConservationVote - Login|Register {% endblock %} {%
+block header %} {% endblock %} {% block content %}
+
+<div class="card mx-auto mt-4 text-center" style="max-width: 600px">
+  <div class="card-body">
+    <h1>Login</h1>
+    <div>
+      <span
+        ><a
+          href="{{ url_for('login') }}"
+          class="link-secondary text-decoration-none fw-semibold"
+          >Login</a
+        >
+        |
+      </span>
+      <a
+        href="{{ url_for('register') }}"
+        class="link-secondary text-decoration-none fw-semibold"
+        >Register</a
+      >
+    </div>
+    <form action="{{ url_for('login') }}" method="post" autocomplete="off">
+      <div class="mb-3 row">
+        <label for="username" class="form-label col-sm-4 text-start"
+          ><i class="fas fa-user"></i> Username</label
+        >
+        <div class="col-sm-8">
+          <input
+            type="text"
+            class="form-control"
+            name="username"
+            id="username"
+            placeholder="Username"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="mb-3 row">
+        <label for="password" class="form-label col-sm-4 text-start"
+          ><i class="fas fa-lock"></i> Password</label
+        >
+        <div class="col-sm-8">
+          <input
+            type="password"
+            class="form-control"
+            name="password"
+            id="password"
+            minlength="8"
+            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_])[^\s]{8,}"
+            placeholder="Password"
+            title="Password must be at least 8 characters long, contain a number, a lowercase letter, an uppercase letter, a special character, and have no spaces"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="text-danger mb-3">{{ msg }}</div>
+      <button type="submit" class="btn btn-success w-100">Login</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

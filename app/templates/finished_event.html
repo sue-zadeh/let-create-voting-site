@@ -1,0 +1,71 @@
+{% extends "base_layout.html" %} {% block title %} ConservationVote - Previous Events {% endblock %} 
+  {% block header %}
+  {% if current_competition is not none %}
+  <h3 class="themed">Previous Events</h3>
+  {% endif %}
+  {% endblock %} 
+  {% block css %}
+  <style>
+    :root {
+      --page-background-color: {{ styles['background_color'] | default('#FFFFFF') }};
+      --topic-text-color: {{ styles['topic_text_color'] | default('#000000') }};
+      --topic-font-size: {{ styles['topic_font_size'] | default('2rem') }};
+      --main-text-color: {{ styles['main_text_color'] | default('#000000') }};
+      --main-font-size: {{ styles['main_font_size'] | default('1.25rem') }};
+    }
+    
+    body, .modal-content.themed {
+      background-color: var(--page-background-color);
+    }
+    
+    h1.themed, h2.themed, h3.themed, h4.themed {
+      color: var(--topic-text-color);
+      font-size: var(--topic-font-size);
+    }
+    
+    p.themed, label.themed, input.themed {
+      color: var(--main-text-color);
+      font-size: var(--main-font-size);
+    }
+    </style>
+  <link href="{{ url_for('static', filename='css/event.css') }}" rel="stylesheet">
+  {% endblock %}
+  {% block content %}
+  {% if current_competition is not none %}
+  <div class="text-center p-4 rounded shadow-sm">
+    <div class="container-fluid row">
+      <div class="d-flex flex-wrap justify-content-center">
+    {%for event_id in events.keys() %}
+    {% set event = events[event_id] %}
+    {% set winner_info = event["winner_info"] %}
+    <div class="card m-2" style="width: 18rem;">
+        <img src="{{ url_for('static', filename='competitor_images/' ~ winner_info['image']) }}" class="card-img-top" alt="...">
+        <div class="card-body">
+          <p class="card-text">Event Name:
+            {% if logged_in_role != 'guest' %} 
+            <a href="{{url_for('event', event_id=event_id)}}">{{winner_info['event_name']}}</a>
+            {% else %}
+            {{winner_info['event_name']}}
+            {% endif %}
+          </p>
+        <p class="card-text">Winner Name: {{winner_info['name']}}</p>
+        <p class="card-text">Winner Description: {{winner_info['description']}}</p>
+        <p class="card-text">Winner Vote: {{event["winner_vote_percentage"]}} %
+                            Total Votes: {{event["total_votes"]}}       
+        </p>
+        </div>
+    </div>  
+    {%endfor%}
+    {% if events | length == 0 %}
+    <div class="text-center p-4 bg-warning text-dark rounded shadow-sm">
+        <p class="mb-0">No data available on this page.</p>
+    </div>
+    {% endif %}
+    </div>
+    </div>
+</div>
+{% else %}
+{% include "competition_list.html" %}
+{% endif %}
+  {% endblock %}
+

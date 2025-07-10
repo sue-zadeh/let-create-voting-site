@@ -1,0 +1,144 @@
+{% extends 'base_layout.html' %} {% block title %}ConservationVote - Competition Ban Update{%
+endblock %} {% block content %}
+<h3 class="mt-4 text-center">Competition Bans - {{username}}</h3>
+<div class="container">
+  {%if logged_in_role == 'admin' or logged_in_role == "scrutineer" or logged_in_site_role == "site admin" %} {% for
+  ban_list in ban_lists %}
+  <form
+    method="POST"
+    action="{{ url_for('ban_single_user', user_id=ban_list['user_id']) }}"
+    class="mb-5"
+  >
+    <table class="table table-hover table-bordered align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col" class="text-center">Competition Name</th>
+          <th scope="col" class="text-center">Status</th>
+          <th scope="col" class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-center">{{ ban_list['competition_name'] }}</td>
+          <input
+            type="hidden"
+            value="{{ ban_list['competition_id'] }}"
+            name="competition_id"
+          />
+          <input
+            type="hidden"
+            value="{{ ban_list['status'] }}"
+            name="ban_status"
+          />
+          <td class="text-center">
+            <div>{{ ban_list['status'] }}</div>
+            {% if ban_list['status'] == "Banned" %}
+            <div class="text-danger">{{ ban_list['reason'] }}</div>
+            {% endif %}
+          </td>
+          {% if ban_list['status'] == "Banned" %}
+          <td class="text-center">
+            <div class="mt-2">
+              <button class="btn btn-success" type="submit">Activate</button>
+            </div>
+          </td>
+          {% else %}
+          <td class="text-center">
+            <label class="form-label" for="reason_for_ban"
+              >Reason for Ban:</label
+            >
+            <textarea
+              id="reason_for_ban"
+              name="reason_for_ban"
+              class="form-control"
+              rows="1"
+              placeholder="Enter reason for ban"
+              required
+            ></textarea>
+            <div class="mt-2">
+              <button class="btn btn-danger" type="submit">Ban</button>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
+  </form>
+
+  {% endfor %}
+  {%endif%}
+  {%if logged_in_site_role == 'site admin'%}
+
+  <h3 class="mt-4 text-center">Site Wide Ban</h3>
+  <form
+    method="POST"
+    action="{{ url_for('site_wide_ban', user_id=site_wide_ban['user_id']) }}"
+    class="mb-5"
+  >
+    <table class="table table-hover table-bordered align-middle">
+      <thead class="table-success">
+        <tr>
+          <th scope="col" class="text-center">Status</th>
+          <th scope="col" class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <input
+          type="hidden"
+          value="{{ site_wide_ban['status'] }}"
+          name="site_wide_ban_status"
+        />
+        <input
+          type="hidden"
+          value="{{ site_wide_ban['site_wide_ban_id'] }}"
+          name="site_wide_ban_id"
+        />
+        <tr>
+          <td class="text-center">
+            <div>{{ site_wide_ban['status'] }}</div>
+            {% if site_wide_ban['status'] == "Banned" %}
+            <div class="text-danger">{{ site_wide_ban['reason'] }}</div>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if site_wide_ban['status'] == "Banned" %}
+            <div class="mt-2">
+              <button
+                class="btn btn-success"
+                type="submit"
+                name="action"
+                value="activate"
+              >
+                Activate
+              </button>
+            </div>
+            {% else %}
+            <label class="form-label" for="reason_for_site_wide_ban"
+              >Reason for Ban:</label
+            >
+            <textarea
+              id="reason_for_site_wide_ban"
+              name="reason_for_site_wide_ban"
+              class="form-control"
+              rows="1"
+              placeholder="Enter reason for ban"
+              required
+            ></textarea>
+            <div class="mt-2">
+              <button
+                class="btn btn-danger"
+                type="submit"
+                name="action"
+                value="ban"
+              >
+                Ban
+              </button>
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </form>
+</div>
+{%endif%} {% endblock %}

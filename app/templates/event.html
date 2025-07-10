@@ -1,0 +1,377 @@
+
+{% extends "base_layout.html" %}
+{% block title %}
+ConservationVote - Event
+{% endblock %}
+{% block css %}
+<style>
+    :root {
+      --page-background-color: {{ styles['background_color'] | default('#FFFFFF') }};
+      --topic-text-color: {{ styles['topic_text_color'] | default('#000000') }};
+      --topic-font-size: {{ styles['topic_font_size'] | default('2rem') }};
+      --main-text-color: {{ styles['main_text_color'] | default('#000000') }};
+      --main-font-size: {{ styles['main_font_size'] | default('1.25rem') }};
+    }
+    
+    body, .modal-content.themed {
+      background-color: var(--page-background-color);
+    }
+    
+    h1.themed, h2.themed, h3.themed, h4.themed {
+      color: var(--topic-text-color);
+      font-size: var(--topic-font-size);
+    }
+    
+    p.themed, label.themed, input.themed {
+      color: var(--main-text-color);
+      font-size: var(--main-font-size);
+    }
+    </style>
+<link href="{{ url_for('static', filename='css/event.css') }}" rel="stylesheet">
+{% endblock %}
+{% block header %}
+{% endblock %}
+{% block content %}
+<p hidden class="vms-competition-change" data-vms-url="{{url_for('current_event')}}"></p>
+<!-- Scrollable modal -->
+{% if selected_event %}
+{% if selected_event.status == 'active' %}
+<div class="d-flex container-fluid">
+    <div class="row mx-auto w-100">
+        <div class=" container-fluid col-sm-12 {% if selected_event | event_status == 'active' %}col-xl-9{% endif %} text-center">
+            <div class="container text-center position-relative">
+                <h2 class="themed">{{ selected_event.name }}</h2>
+                <p class="themed">{{ selected_event.description }}</p>
+                <p class="themed">from {{ selected_event.start_date.strftime('%d/%m/%Y') }} to {{
+                    selected_event.end_date.strftime('%d/%m/%Y') }}</p>
+                {% if edit_event %}
+                <button class="btn btn-success" href="#" data-bs-toggle="modal"
+                    data-bs-target="#edit-competitor-details" data-bs-name="" data-bs-description=""
+                    data-vms-image="{{ url_for('static', filename='competitor_images/' + 'blank.png') }}"
+                    data-vms-image-name=""
+                    data-vms-save-competitor-url="{{url_for('save_competitor', competitor_id=0)}}">Add
+                    Competitor</button>
+                {% endif %}
+            </div>
+
+            <!-- Static Backdrop Modal -->
+            <div class="modal fade" id="confirm-dialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="confirmDialogLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="confirmDialogLabel">Remove?</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            ...
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                            <button type="button" class="btn btn-success delete-button">Yes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrollable Modal -->
+            <div class="modal fade text-start" id="competitor-details" tabindex="-1">
+                <div class="modal-dialog modal-dialog-scrollable">
+                    <div class="modal-content themed">
+                        <div class="modal-header">
+                            <h4 class="modal-title themed" id="competitor-name">Modal Title</h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="container position-relative">
+                            <img alt="Image of the competitor" class="vms-competitor-image"
+                                src="{{ url_for('static', filename='competitor_images/' + 'blank.png') }}"
+                                class="img-fluid" style="height: 50%; width: 100%; object-fit: cover;">
+                            <p id="competitor-description" class="themed">Modal text</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrollable Editable Modal -->
+            <div class="modal fade text-start" id="edit-competitor-details" tabindex="-1">
+                <form>
+                    <div class="modal-dialog modal-dialog-scrollable">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <label for="name-input" class="modal-title me-2">Name </label>
+                                <input id="name-input" maxlength="100" type="text"
+                                    class="vms-edit-competitor-name focus-ring form-control">
+                                <div class="vms-edit-name-feedback invalid-feedback">
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" class="vms-event-id" value="{{selected_event['event_id']}}">
+                                <input type="hidden" class="vms-img-filename">
+                                <input accept=".jpg, .jpeg, .png" id="profile_image" class="form-control vms-img-select"
+                                    type="file" value="" />
+                                <label for="img-select">Click on the image to change it</label>
+                                <div class="vms-edit-image-feedback invalid-feedback">
+                                </div>
+                                <div class="container position-relative">
+                                    <img class="vms-edit-competitor-image"
+                                        src="{{ url_for('static', filename='competitor_images/' + 'blank.png') }}"
+                                        id="img-select" class="img-fluid" alt="Click to select a new image"
+                                        style="height: 50%; width: 100%; object-fit: cover;">
+                                    <div class="edit-image-overlay bg-success"></div>
+                                </div>
+                                <label for="description-input">Description</label>
+                                <textarea style="height: 40%;" id="description-input"
+                                    class="vms-edit-competitor-desc w-100"></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-success save-button">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!-- confirm vote Modal -->
+            <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="confirmModalLabel">
+                                Confirm Vote
+                            </h5>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to vote for this competitor?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close">
+                                Cancel
+                            </button>
+                            <button type="button" class="btn btn-success" data-vms-competitor-id="" id="confirmVote">
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {%if banned_user%}
+              <div class="alert alert-warning mt-3 text-center" role="alert">
+                You have been banned from this competition. If you believe this ban is
+                unjust, you can appeal it.
+            
+                <a href="{{ url_for('view_banned_competitions') }}" class="btn btn-danger">
+                  Appeal
+                </a>
+              </div>
+              {%endif%} {%if site_wide_banned_user%}
+              <div class="alert alert-warning mt-3 text-center" role="alert">
+                You have been site wide banned. If you believe this ban is unjust, you can
+                appeal it.
+            
+                <a href="{{ url_for('view_banned_competitions') }}" class="btn btn-danger">
+                  Appeal
+                </a>
+              </div>
+              {%endif%}
+
+            <div class="container-fluid row">
+                <div class="d-flex flex-wrap justify-content-center">
+                    {% for competitor in competitors %}
+                    <div class="card m-2" style="width: 18rem;">
+                        <div class="card-img-top position-relative" style="height: 200px; overflow: hidden;">
+                            <img src="{{ url_for('static', filename='competitor_images/' + competitor['image']) }}"
+                                class="img-fluid" alt="{{ competitor['name'] }}"
+                                style="height: 100%; width: 100%; object-fit: cover;">
+                            {% if edit_event %}
+                            <div class="dropdown position-absolute bottom-0 end-0">
+                                <button class="btn btn-secondary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    ...
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                            data-bs-target="#edit-competitor-details"
+                                            data-bs-image="{{ competitor['image'] }}"
+                                            data-bs-name="{{ competitor['name'] }}"
+                                            data-bs-description="{{competitor['description']}}"
+                                            data-vms-image="{{ url_for('static', filename='competitor_images/' + competitor['image']) }}"
+                                            data-vms-image-name="{{ competitor['image'] }}"
+                                            data-vms-save-competitor-url="{{url_for('save_competitor', competitor_id=competitor['competitor_id'])}}">Edit</a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                            data-bs-target="#confirm-dialog"
+                                            data-vms-delete-competitor-url="{{url_for('delete_competitor', competitor_id=competitor['competitor_id'])}}"
+                                            data-vms-competitor-name="{{competitor['name']}}">Remove</a></li>
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title">{{ competitor["name"] }}</h4>
+                            <button type="button" class="btn btn-success view-info" data-bs-toggle="modal"
+                                data-bs-target="#competitor-details" data-bs-image="{{ competitor['image'] }}"
+                                data-bs-name="{{ competitor['name'] }}"
+                                data-vms-image="{{ url_for('static', filename='competitor_images/' + competitor['image']) }}"
+                                data-bs-description="{{competitor['description']}}">
+                                More Information
+                            </button>
+                            <form>
+                                {%if (logged_in_role == 'voter' or logged_in_role == 'guest') and selected_event |
+                                event_status
+                                != 'closed' and selected_event | event_status != 'future' and voted_for is none %}
+                                <a type="button"
+                                    class="btn btn-success pull-right ml-2 mt-2 {% if logged_in_role == 'guest' %}redirect-home{% endif %}"
+                                    {% if logged_in_role !='guest' %} data-bs-toggle="modal"
+                                    data-bs-target="#confirmModal"
+                                    data-vms-competitor-id="{{competitor['competitor_id']}}"
+                                    data-vms-logged-in-role="{{logged_in_role}}" {% endif %}>Vote</a>
+                                {%endif%}
+                                {% if competitor['competitor_id'] == voted_for %}
+                                <a type="button" class="btn btn-success pull-right ml-2 mt-2">Voted</a>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <form method="post" action="{{url_for('event', event_id=selected_event['event_id'])}}"
+                        id="voteForm">
+                        <input type="hidden" name="competitor_id" id="voting-for" value="" />
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% if selected_event | event_status == 'active' %}
+        <div class="container-fluid col-sm-12 col-xl-3 mt-5" id="recentVoters">
+            <h1 class="text-center mb-4 p-3 themed">Recent Voters</h1>
+            {% if recent_voters %}
+            {% for voter in recent_voters %}
+            <div class="mb-4 mx-2 g-0">
+                <div class="card mx-auto text-center col-xs-12 col-md-8 col-xl-12">
+                    <div class="row g-0" style="height: 120px;">
+                        <div class="col-4 h-100">
+                            <img class="rounded-circle img-fluid object-fit-cover h-100"
+                                src="{{ url_for('static', filename='user_images/' + (voter.profile_image if voter.profile_image else 'default.jpg')) }}"
+                                alt="Profile picture of {{ voter.username }}">
+                        </div>
+                        <div class="col-8">
+                            <div class="card-body pt-1 px-1">
+                                <h5 class="card-title">{{ voter.username }}</h5>
+                                <p class="card-text small mb-1 overflow-hidden" style="max-height: 54px;">{{voter.description}}</p>
+                                <p class="card-footer small p-0 mb-0">Vote time: {{ voter.vote_time | format_datetime }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-center text-muted fs-5">No recent voters to display for this event.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if (logged_in_role == "admin" or logged_in_role == "scrutineer") and (selected_event | event_status != 'future') %}
+<hr>
+<div class="container">
+    <h3>Activity</h3>
+    <!-- Sort Options -->
+    <div class="sort-options d-flex justify-content-center mb-3">
+        <a class="vms-btn-sort-date btn btn-primary mx-2">
+            Sort by Date
+        </a>
+        <a class="vms-btn-sort-votes btn btn-secondary mx-2">
+            Sort by Most Votes
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Vote number</th>
+                </tr>
+            </thead>
+            <tbody class="vms-sort-by-date">
+                {% for dailyVote in daily_votes %}
+                <tr class="table-row">
+                    <th scope="row">{{dailyVote['voteDate'] | format_date}}</th>
+                    <td>{{dailyVote['voteNum']}} </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tbody class="vms-sort-by-votes d-none">
+                {% for dailyVote in daily_votes_sorted_count %}
+                <tr class="table-row">
+                    <th scope="row">{{dailyVote['voteDate'] | format_date}}</th>
+                    <td>{{dailyVote['voteNum']}} </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+
+{% elif selected_event.status == "closed" %}
+<div class="text-center p-4 bg-light rounded shadow-sm">
+    <h2 class="mb-3">Event Closed</h2>
+    <p>Please check back later when the result has been finalised.</p>
+</div>
+
+
+{% elif selected_event.status == "finalised" %}
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Competitor Name</th>
+            <th scope="col">Image</th>
+            <th scope="col">Number of Votes</th>
+            <th scope="col">Percentage of Votes</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {%if finalised_events%}{%for finalised_event in finalised_events%}
+        <tr>
+            <td>{{finalised_event['name']}}</td>
+            <td>
+                <img src="{{ url_for('static', filename='competitor_images/' + finalised_event['image']) }}"
+                    class="img-fluid" style="min-width: 120px; height: 120px; width: 120px; object-fit: cover;" />
+            </td>
+            <td>{{finalised_event['voteNum']}}</td>
+            <td>{{finalised_event['percentage']}}%</td>
+        </tr>
+        {%endfor%}{%endif%}
+    </tbody>
+</table>
+{% endif %}
+
+{% else %}
+{% if current_competition is none %}
+{% include "competition_list.html" %}
+{% else %}
+<div class="text-center p-4 bg-warning text-dark rounded shadow-sm">
+    <p class="mb-0">No active event available for now.</p>
+    <p class="mb-0">Check Previous Event for all past events that have been finalised.</p>
+</div>
+{% endif %}
+{% endif %}
+<script src="{{ url_for('static', filename='js/event.js') }}"></script>
+{% endblock %}
+

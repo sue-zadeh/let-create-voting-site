@@ -1,0 +1,57 @@
+<!-- templates/home.html -->
+{% extends "base_layout.html" %}
+
+{% block title %}ConservationVote - Home{% endblock %}
+
+{% block content %}
+
+<!-- top Home Section -->
+<div class="home-section d-flex flex-column align-items-center justify-content-center">
+  <h1 class="home-title text-light px-2">Welcome to ConservationVote</h1>
+  <p class="home-subtitle text-light">Empower conservation efforts by creating or joining competitions.</p>
+  <a href="{{ url_for('create_application') }}" class="btn btn-success btn-lg">Apply for New Competition</a>
+</div>
+
+{% include "competition_list.html" %}
+
+<div class="container my-6">
+  <div class="icon-section">
+    {% if logged_in_role != 'guest' %}
+      <div class="icon-item">
+          <i class="fas fa-user fa-3x"></i>
+          <a class="nav-link fs-4" href="{{ url_for('profile', user_id=session['user_id'])}}"><b>Profile</b></a>
+          <p class="fs-6">View and manage your profile.</p>
+      </div>
+      <div class="icon-item">
+          <i class="fas fa-envelope fa-3x"></i>
+          <a class="nav-link fs-4" href="{{ url_for('view_message_box') }}"><b>Message Box</b></a>
+          <p class="fs-6">View your messages.</p>
+      </div>
+      <div class="icon-item">
+          <i class="fas fa-compass fa-3x"></i>
+          <a class="nav-link fs-4" href="{{ url_for('profile_list')}}"><b>Profile Directory</b></a>
+          <p class="fs-6">Browse the Profile Directory to send messages to other users.</p>
+      </div>
+    {% else %}
+        <div class="icon-item">
+          <i class="fas fa-user-plus fa-3x"></i>
+          <a class="nav-link fs-4" href="{{ url_for('register') }}"><b>Register</b></a>
+          <p class="fs-6">Create an account to join or start competitions.</p>
+        </div>
+        <div class="icon-item">
+          <i class="fas fa-sign-in-alt  fa-3x"></i>
+          <a class="nav-link fs-4" href="{{ url_for('login') }}"><b>Login</b></a>
+          <p class="fs-6">Access your account and manage your competitions.</p>
+        </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Footer Section -->
+<footer class="bg-light-green text-center container">
+  <h2 class="fs-3">How It Works</h2>
+  <p class="mx-auto px-4 fs-5" style="max-width: 800px;">
+      Our platform makes it easy for conservation groups to create, manage, and promote their own competitions. Whether it's "Tree of the Year" or "Rock of the Year," get your community involved in conservation efforts with just a few clicks.
+  </p>
+</footer>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base_layout.html" %}
+
+{% block title %}
+NZ Tree of the Year
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+
+
+
+<div class="container mt-4">
+  <div class="row">
+
+
+    <div class="col-lg-8">
+      <div id="carouselAutoplaying" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item">
+            <img src="{{ url_for('static', filename='kauri.jpg') }}" class="d-block w-100" alt="Kauri Tree">
+          </div>
+          <div class="carousel-item active">
+            <img src="{{ url_for('static', filename='pohutukawa.jpg') }}" class="d-block w-100" alt="Pohutukawa Tree">
+          </div>   
+        </div>
+
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselAutoplaying" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselAutoplaying" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
+
+
+
+    <div class="col-lg-4 d-flex align-items-center">
+      <div class="text-container p-4 bg-light rounded shadow-sm" >
+        <h1 class="display-5 fw-bold text-success mb-4">NEW ZEALAND TREE OF THE YEAR 2024</h1>
+        <p class="lead mb-4 text-muted">Discover the beauty and significance of the native trees that make our land truly unique. By casting your vote in the 2024 Tree of the Year event, you contribute to preserving and honouring these natural treasures.</p>
+        <p class="h4 mb-0 text-dark text-center"><strong>YOUR VOTE MATTERS!</strong></p>
+        <img src="{{ url_for('static', filename='home_tree.jpeg') }}" class="img-fluid" alt="Tree">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="{{ url_for('static', filename='js/home.js') }}"></script>
+<script>
+  var myCarousel = document.querySelector('#carouselAutoplaying')
+  var carousel = new bootstrap.Carousel(myCarousel, {
+    interval: 3000, 
+    ride: 'carousel'
+  })
+</script>
+
+
+{% endblock %}

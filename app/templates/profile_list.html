@@ -1,0 +1,290 @@
+{%extends 'base_layout.html'%}{% block title %}ConservationVote - Profile Directory{% endblock %}
+{%block header %}
+{% if current_competition is not none %}
+<h1 class="mb-4 text-center">Profile Directory</h1>
+{% endif %}
+{% endblock %} {% block content %}
+
+{% if current_competition is not none %}
+<div class="container">
+  <div class="row mt-3">
+    <div class="col-md-12">
+      <label class="labels">Competition</label>
+      <select
+        class="form-select"
+        aria-label="Default select example"
+        id="competition_select"
+      >
+        {% for competition in competitions %}
+          <option value="{{competition['competition_id']}}" {% if current_competition == competition['name'] %} selected {% endif %}>
+            {{competition.name}}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <h4>Search User</h4>
+  <form
+    action="{{user_list_url}}"
+    method="POST"
+    class="row needs-validation ml-5"
+    novalidate
+    autocomplete="off"
+  >
+    <div class="form-group row">
+      <label for="username" class="col-sm-3 col-form-label">Username</label>
+      <div class="col-sm-6 col-md-3 mb-2">
+        <input
+          type="text"
+          value="{{username}}"
+          name="username"
+          id="username"
+          class="form-control"
+        />
+        <div class="invalid-feedback">Please enter valid usename.</div>
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="lastname" class="col-sm-3 col-form-label">First Name</label>
+      <div class="col-sm-6 col-md-3 mb-2">
+        <input
+          type="text"
+          value="{{firstname}}"
+          name="firstname"
+          id="firstname"
+          class="form-control"
+          pattern="[A-Za-z]+"
+        />
+        <div class="invalid-feedback">Please enter valid name.</div>
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="lastname" class="col-sm-3 col-form-label">Last Name</label>
+      <div class="col-sm-6 col-md-3 mb-2">
+        <input
+          type="text"
+          value="{{lastname}}"
+          name="lastname"
+          id="lastname"
+          class="form-control"
+          pattern="[a-zA-Z]*"
+        />
+        <div class="invalid-feedback">Please enter valid name.</div>
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="email" class="col-sm-3 col-form-label">Email</label>
+      <div class="col-sm-6 col-md-3 mb-2">
+        <input
+          type="text"
+          value="{{email}}"
+          name="email"
+          id="email"
+          class="form-control"
+        />
+        <div class="invalid-feedback">Please enter valid email.</div>
+      </div>
+    </div>
+    <div class="col-12 mt-3">
+      <button class="btn btn-success search-button" type="submit">Submit</button
+      ><a class="btn ms-2 btn-success clear-button">Clear</a>
+    </div>
+  </form>
+</div>
+<div class="table-responsive">
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Username</th>
+      <th scope="col">Full Name</th>
+      <th scope="col">Profile Image</th>
+      <th scope="col">Recent Posts</th>
+      <th scope="col">Recent Votes</th>
+      <th scope="col">Email</th>
+      <th scope="col">Role</th>
+      {%if logged_in_site_role == "site admin"%}
+      <th scope="col">Site Role</th>
+      {%endif%}
+      <th scope="col">Status</th>
+      {%if have_admin_privileges or logged_in_site_role != "voter"%}
+      <th scope="col">View Profile</th>
+      {% endif %}
+      <th scope="col">Send a Message</th>
+    </tr>
+  </thead>
+  {%if users%}
+    {%for user in users%}
+  <tbody>
+    <tr>
+      <td>{{user['username']}}</td>
+      <td>{{user['all_name']}}</td>
+      <!-- make image col -->
+      <td>
+        <img
+          src="{{url_for('static', filename='user_images/' + user['profile_image'])}}"
+          alt="profile image"
+          style="width: 100px; height: 100px;"
+        />
+      </td>
+      <!-- Message -->
+       <td>{{user['message']}}</td>
+      <!-- Competition -->
+      <td>{{user['competition']}}</td>
+      <td>{{user['email']}}</td>
+      <td>{{user['role']}}</td>
+      {%if logged_in_site_role == "site admin"%}
+      <td>{{user['site_role']}}</td>
+      {%endif%}
+      <td style={%if user['is_active'] == 1%}"color:green;"{%else%}"color:red;"{%endif%}>
+        {%if user["is_active"] == 1%}Active{%else%}Inactive{%endif%}</td>
+      {%if have_admin_privileges or logged_in_site_role != "voter"%}
+      <td>
+        <a
+          class="btn btn-success"
+          href="{{url_for('profile',user_id=user['user_id'])}}"
+          >View</a
+        >
+      </td>
+      {% endif %}
+      {% if current_user_id != user['user_id'] %}
+      <td>
+        <button type="button" class="btn btn-success open_message_box" value="{{user['user_id']}}" data-bs-toggle="modal" data-bs-target="#sendMessageModal{{ user['user_id'] }}">
+            Message
+        </button>   
+      </td>
+      {% else %}
+      <td>
+      </td>
+      {% endif %}
+
+    </tr>
+
+    <!-- Send Message Modal -->
+    <div class="modal fade" id="sendMessageModal{{ user['user_id'] }}" tabindex="-1" aria-labelledby="sendMessageModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="sendMessageModalLabel">Send Message to {{ user['username'] }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <div id="message_body{{ user['user_id'] }}" class="text-start"></div>
+                  <form method="POST">
+                      <div class="mb-3">
+                          <label for="messageText{{ user['user_id'] }}" class="form-label">Message</label>
+                          <textarea class="form-control" id="messageText{{ user['user_id'] }}" name="message" rows="3"></textarea>
+                      </div>
+                      <input type="hidden" name="user_id" value="{{ user['user_id'] }}">
+                      <button type="button" class="btn btn-success send_message" value="{{ user['user_id'] }}">Send</button>
+                  </form>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  </tbody>
+    {%endfor%}
+  {%endif%}
+</table>
+</div>
+{% else %}
+{% include "competition_list.html" %}
+{% endif %}
+<input type="hidden" id="current_competition_id" value="{{current_competition_id}}"></input>
+<script src="{{ url_for('static', filename='js/profile_list.js') }}"></script>
+
+
+<script>
+    const currentUserId = document.getElementById("current_user_id").value;
+
+    const send_message_buttons = document.querySelectorAll('.send_message'); 
+    send_message_buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            const receiver_id = button.value;
+            const message = document.getElementById("messageText" + receiver_id).value;
+
+            // Display the message in the modal
+            // const li = document.createElement('li');
+            // li.classList.add('text-start');
+            // li.appendChild(document.createTextNode("me: " + message));
+            // document.getElementById('message_body' + receiver_id).appendChild(li);
+            const li = document.createElement('li');
+            li.classList.add('text-start');
+
+            // Create bold "me:" text
+            const boldText = document.createElement('strong');
+            boldText.textContent = "me: ";
+            li.appendChild(boldText);
+
+            // Append the message text
+            li.appendChild(document.createTextNode(message));
+
+            // Add timestamp
+            const time = new Date().toLocaleString(); // Get current date and time
+            const timestamp = document.createElement('span');
+            timestamp.style.fontSize = "0.85em";
+            timestamp.style.float = "right";
+            timestamp.textContent = time;
+
+            li.appendChild(timestamp);
+            document.getElementById('message_body' + receiver_id).appendChild(li);
+
+            // Display the spinner
+      
+             // Create and display the spinner inside the button
+            button.innerHTML = 'Sending... <div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>';
+            button.disabled = true; // Disable the button to prevent multiple clicks
+
+        // Simulate sending the message
+        setTimeout(() => {
+            
+             // Reset button after sending the message
+             button.innerHTML = 'Send Message';
+            button.disabled = false; // Re-enable the button
+        }, 500); // Simulate a 0.5-second delay for sending the message
+            // Send message via AJAX
+            fetch('/send_message', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ receiver_id, message })
+                  }).then(response => {
+                      if (!response.ok) {
+                          throw new Error('Network response was not ok');
+                      }
+                      return response.json();
+                  }).then(data => {
+                      if (!data.success) {
+                          window.alert("Your message has not been sent: " + (data.error || "Unknown error"));
+                      }
+                  }).catch(error => {
+                      window.alert("An error occurred: " + error.message);
+                  });
+
+            // Clear the textarea
+            document.getElementById("messageText" + receiver_id).value = '';
+        });
+    });
+
+
+  // if competition_select changes, reload page with new competition
+  document
+    .getElementById("competition_select")
+    .addEventListener("change", function () {
+      bodyData = JSON.stringify({competition_id: document.getElementById("competition_select").value});
+
+      fetch('/change_competition', { method: 'PUT', headers: {"Content-Type": "application/json"}, body: bodyData })
+      .then(() => {
+        location.reload();
+      })
+    });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("competition_select").value = document.getElementById('current_competition_id').value;
+  });
+  
+  
+    
+</script>
+{%endblock%}

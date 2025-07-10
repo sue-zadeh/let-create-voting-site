@@ -1,0 +1,233 @@
+{% extends 'base_layout.html' %}
+{% block title %}ConservationVote - Banned Competitions{% endblock %}
+
+{% block content %}
+
+    <h1 class="mt-4 text-center">Competition Bans</h1>
+
+    {% if not banned_competitions and not site_wide_ban_info%}
+        <div class="alert alert-warning mt-3" role="alert">
+            Congratulations! You have full voting rights. You're not banned from any competitions.
+        </div>
+    {% endif %}
+    
+    <!-- Only show when there is a pending or denied sitewide ban -->
+    {% if site_wide_ban_info and site_wide_ban_info['swb_appeal_status'] != 'approved' %}
+        <div class="alert alert-warning mt-3 text-center" role="alert">
+            You have been banned sitewide on {{site_wide_ban_info['swb_ban_date']}} for "{{site_wide_ban_info['swb_ban_reason']}}".
+            If you believe this ban is unjust, you can appeal it.
+            {% if not site_wide_ban_info['swb_appeal_reason'] %}
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#swbappealModal">Appeal</button>
+            {% else %}
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#swbviewAppealModal">View Appeal</button>
+            {% endif %}
+        </div>
+
+            <!-- modal for submitting a sitewide ban appeal -->
+            <div class="modal" id="swbappealModal" tabindex="-1" aria-labelledby="swbappealModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="swbappealModalLabel">Appeal the Sitewide Ban</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to appeal the sitewide ban? Please provide a reason for your appeal:</p>
+                            <textarea id="swbappealTextarea" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form action="{{ url_for('appeal_site_wide_ban') }}" method="POST" onsubmit="return swbupdateHiddenInput(this);">
+                                <input type="hidden" name="swb_ban_id" value="{{ site_wide_ban_info['swb_ban_id'] }}">
+                                <input type="hidden" name="swb_appeal_reason" id="swbappealReason">
+                                <button type="submit" class="btn btn-danger">Submit</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- modal for viewing a sitewide ban appeal that has been made-->
+            <div class="modal" id="swbviewAppealModal" tabindex="-1" aria-labelledby="swbviewAppealModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="swbviewAppealModalLabel">View Appeal</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Field</th>
+                                        <th scope="col">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Appeal Reason</td>
+                                        <td>{{ site_wide_ban_info['swb_appeal_reason'] }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Date of Appeal</td>
+                                        <td>{{ site_wide_ban_info['swb_appeal_date'] }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Appeal Status</strong></td>
+                                        <td><strong>{{ site_wide_ban_info['swb_appeal_status'] }}</strong></td>
+
+                                    <!-- Show response and response time rows only where a response has already been given, not null or empty string-->
+                                    {% if site_wide_ban_info['swb_appeal_response'] %}
+                                        <tr>
+                                            <td>Site Admin Response</td>
+                                            <td>{{ site_wide_ban_info['swb_appeal_response'] }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Response Date</td>
+                                            <td>{{ site_wide_ban_info['swb_response_date'] }}</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+     
+    {% endif %}
+
+    {% if banned_competitions %}
+        <div class="table-responsive mt-4">
+            <table class="table table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Competition Name</th>
+                        <th scope="col">Ban Date</th>
+                        <th scope="col">Ban Reason</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    {% for banned_competition in banned_competitions %}
+                        {% if banned_competition['appeal_status'] != 'approved' %} 
+                        <!-- Hide approved appeals - only show appeals that are pending or denied -->
+                        <tr>
+                            <th scope="row">{{ banned_competition['competition_name'] }}</th>
+                            <td>{{ banned_competition['ban_date'] }}</td>
+                            <td>{{ banned_competition['reason'] }}</td>
+                            <td>
+                                <!-- Depending on whether there is already an appeal submitted, show either "appeal" or "view appeal" button -->
+                                {% if not banned_competition['appeal_reason'] %}   
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#appealModal{{ banned_competition['ban_id'] }}">Appeal</button>
+                                {% else %}
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#viewAppealModal{{ banned_competition['ban_id'] }}">View Appeal</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <!-- modal for submitting an appeal -->
+        {% for banned_competition in banned_competitions %}
+            <div class="modal" id="appealModal{{ banned_competition['ban_id'] }}" tabindex="-1" aria-labelledby="appealModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="appealModalLabel">Appeal the Ban</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to appeal this ban? Please provide a reason for your appeal:</p>
+                            <textarea id="appealTextarea{{ banned_competition['ban_id'] }}" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form action="{{ url_for('appeal_bans') }}" method="POST" onsubmit="return updateHiddenInput(this);">
+                                <input type="hidden" name="ban_id" value="{{ banned_competition['ban_id'] }}">
+                                <input type="hidden" name="competition_id" value="{{ banned_competition['competition_id'] }}">
+                                <input type="hidden" name="appeal_reason" id="appealReason{{ banned_competition['ban_id'] }}">
+                                <button type="submit" class="btn btn-danger">Submit</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- modal for viewing an appeal that has been made-->
+            <div class="modal" id="viewAppealModal{{ banned_competition['ban_id'] }}" tabindex="-1" aria-labelledby="viewAppealModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="viewAppealModalLabel">View Appeal</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Field</th>
+                                        <th scope="col">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Appeal Reason</td>
+                                        <td>{{ banned_competition['appeal_reason'] }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Date of Appeal</td>
+                                        <td>{{ banned_competition['appeal_date'] }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Appeal Status</strong></td>
+                                        <td><strong>{{ banned_competition['appeal_status'] }}</strong></td>
+
+                                    <!-- Show response and response time rows only where a response has already been given, not null or empty string-->
+                                    {% if banned_competition['appeal_response'] %}
+                                        <tr>
+                                            <td>Scrutineer Response</td>
+                                            <td>{{ banned_competition['appeal_response'] }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Response Date</td>
+                                            <td>{{ banned_competition['response_date'] }}</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        // Update the hidden input field with the value of the textarea
+        function updateHiddenInput(form) {
+            const banId = form.ban_id.value;
+            const textareaValue = document.getElementById(`appealTextarea${banId}`).value;
+            document.getElementById(`appealReason${banId}`).value = textareaValue;
+            return true; // Allow the form to submit
+        }
+
+        function swbupdateHiddenInput(form) {
+            const textareaValue = document.getElementById(`swbappealTextarea`).value;
+            document.getElementById(`swbappealReason`).value = textareaValue;
+            return true; // Allow the form to submit
+        }
+    </script>
+
+{% endblock %}
+

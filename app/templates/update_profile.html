@@ -1,0 +1,292 @@
+{%extends 'base_layout.html'%} {% block title %} ConservationVote - Profile: Update{% endblock %}
+{%block content%}
+<div class="container rounded bg-transparent mt-5 mb-5">
+  <div class="row">
+    <div class="col-md-4 border-right">
+      <div class="d-flex flex-column align-items-center text-center p-3 py-5">
+        <img
+          class="rounded-circle mt-5"
+          width="150px"
+          src="{{ url_for('static', filename='user_images/' + (profileimage if profileimage else 'default.jpg')) }}"
+          alt="Profile Image"
+        />
+        <form
+          method="POST"
+          action="{{ url_for('upload_profile_image') }}"
+          enctype="multipart/form-data"
+          class="text-center"
+          autocomplete="off"
+        >
+          <div class="form-group mt-3">
+            <input type="file" style="font-size: var(--bs-body-font-size);" name="profile_image" class="form-control-file" />
+          </div>
+          <button type="submit" class="btn btn-success mt-2">Upload</button>
+        </form>
+        <form
+          method="POST"
+          action="{{ url_for('delete_profile_image') }}"
+          enctype="multipart/form-data"
+          class="text-center"
+          autocomplete="off"
+        >
+          <div class="form-group mt-3">
+            <input
+              type="hidden"
+              name="profile_image"
+              class="form-control-file"
+              value="{{profileimage}}"
+            />
+          </div>
+          <button type="submit" class="btn btn-success mt-2">Delete</button>
+        </form>
+
+        <span class="font-weight-bold mt-2">{{firstname}} {{lastname}}</span>
+      </div>
+    </div>
+    <div class="col-md-6 border-right">
+      <div class="p-3 py-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="text-right">Profile Settings</h4>
+        </div>
+        <form
+          method="post"
+          class="needs-validation"
+          action="{{url_for('profile_update',user_id=user_id)}}"
+        >
+        <!-- set profile visible -->
+        <div class="row">
+          <label class="labels col-11" for="publicly_visible">Do you want other voters to be able to find your profile?</label>
+          <input
+            type="checkbox"
+            class="form-check-input col-1"
+            id="publicly_visible"
+            name="publicly_visible"
+            value="1"
+            {% if publicly_visible %} checked {% endif %}
+          />
+        </div>
+        <div class="row"><p>If you want other voters to see a profile detail, tick the visible box next to that detail.</p></div>
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label class="labels fst-italic">User Name</label>
+              <input
+                  type="text"
+                  class="form-control"
+                  value="{{username}}"
+                  id="username"
+                  name="username"
+                  readonly
+                />
+            </div>
+            <div class="row mt-2">
+              <div class="col-md-4">
+                <label class="labels fst-italic">First Name</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  value="{{firstname}}"
+                  id="firstname"
+                  name="firstname"
+                  pattern="[A-Za-z\s]+"
+                />
+              </div>
+              <!-- set first name visible -->
+              <div class="col-md-2">
+                <label class="labels" for="first_name_visible">Visible</label
+                ><input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="first_name_visible"
+                  name="first_name_visible"
+                  value="1"
+                  {% if first_name_visible %} checked {% endif %}
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="labels fst-italic">Last Name</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  value="{{lastname}}"
+                  name="lastname"
+                  id="lastname"
+                  pattern="[A-Za-z\s]+"
+                />
+              </div>
+              <!-- visible or not show self message -->
+              <div class="col-md-2">
+                <label class="labels" for="last_name_visible">Visible</label
+                ><input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="last_name_visible"
+                  name="last_name_visible"
+                  value="1"
+                  {% if last_name_visible %} checked {% endif %}
+                />
+            </div>
+            <div class="row mt-3">
+              <div class="col-md-10">
+                <label class="labels fst-italic">Description</label
+                ><input
+                  type="textarea"
+                  class="form-control"
+                  value="{{description}}"
+                  id="description"
+                  name="description"
+                />
+              </div>
+              <div class="col-md-1">
+                <label class="labels" for="description_visible">Visible</label
+                ><input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="description_visible"
+                  name="description_visible"
+                  value="1"
+                  {% if description_visible %} checked {% endif %}
+                />
+              </div>
+              <div class="col-md-10">
+                <label class="labels fst-italic">Email</label
+                ><input
+                  type="email"
+                  class="form-control"
+                  value="{{email}}"
+                  id="email"
+                  name="email"
+                  required
+                />
+              </div>
+              <div class="col-md-1">
+                <label class="labels" for="email_visible">Visible</label
+                ><input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="email_visible"
+                  name="email_visible"
+                  value="1"
+                  {% if email_visible %} checked {% endif %}
+                />
+              </div>
+              <div class="col-md-10">
+                <label class="labels fst-italic">Location</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  value="{{location}}"
+                  id="location"
+                  name="location"
+                />
+              </div>
+              <div class="col-md-1">
+                <label class="labels" for="location_visible">Visible</label
+                ><input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="location_visible"
+                  name="location_visible"
+                  value="1"
+                  {% if location_visible %} checked {% endif %}
+                />
+              </div>
+              <!--<div class="col-md-12">
+                <label class="labels">Role</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  value="{{role}}"
+                  readonly
+                />
+              </div>
+              <div class="col-md-12">
+                <label class="labels">Status</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  value="{{status}}"
+                  readonly
+                />
+              </div>-->
+            </div>
+            <div class="mt-5 text-center">
+              <button class="btn btn-success profile-button" type="submit">
+                Save Profile
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // check the visibility of the fields
+  var publicly_visible = document.getElementById("publicly_visible");
+  var first_name_visible = document.getElementById("first_name_visible");
+  var first_name_input = document.getElementById("firstname");
+  var last_name_visible = document.getElementById("last_name_visible");
+  var last_name_input = document.getElementById("lastname");
+  var description_visible = document.getElementById("description_visible");
+  var description_input = document.getElementById("description");
+  var email_visible = document.getElementById("email_visible");
+  var email_input = document.getElementById("email");
+  var location_visible = document.getElementById("location_visible");
+  var location_input = document.getElementById("location");
+
+  if (publicly_visible.checked) {
+    publicly_visible.value = "1";
+  }
+  else {
+    publicly_visible.value = "";
+  }
+  showInput(first_name_input, first_name_visible, first_name_visible.checked);
+  showInput(last_name_input, last_name_visible, last_name_visible.checked);
+  showInput(description_input, description_visible, description_visible.checked);
+  showInput(email_input, email_visible, email_visible.checked);
+  showInput(location_input, location_visible, location_visible.checked);
+  
+
+  function showInput(input, input_check, show) {
+    if (show){
+      input_check.value = "1";
+      input.style.opacity = 1.0;
+    }
+    else {
+      input_check.value = "";
+      input.style.opacity = 0.8;
+    }
+  }
+
+  // add event listener to the checkbox
+  publicly_visible.addEventListener("change", function () {
+    if (this.checked) {
+      this.value = "1";
+    }
+    else {
+      this.value = "";
+    }
+  });
+
+  first_name_visible.addEventListener("change", function () {
+    showInput(first_name_input, this, this.checked);
+  });
+
+  last_name_visible.addEventListener("change", function () {
+    showInput(last_name_input, this, this.checked);
+  });
+
+  description_visible.addEventListener("change", function () {
+    showInput(description_input, this, this.checked);
+  });
+
+  email_visible.addEventListener("change", function () {
+    showInput(email_input, this, this.checked);
+  });
+
+  location_visible.addEventListener("change", function () {
+    showInput(location_input, this, this.checked);
+  });
+</script>
+{%endblock%}
